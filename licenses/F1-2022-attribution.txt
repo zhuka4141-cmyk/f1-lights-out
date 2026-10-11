@@ -10,5 +10,5 @@ Downloaded GLB SHA256: 8017633e3c697efdfdb8589b697cbab6cb9cb3b898e7cfd3501ae4ac6
 Original GLB retained without file changes, 48,966 triangles.
 Runtime changes: material-based draw batching, proportional scaling, centering,
 orientation and paint/material adjustments. The mesh shape is preserved.
-This attribution is also available inside the game under Leaderboard > Asset credits.
+Attribution is included in the website source comment, repository README and packaged licenses. The in-game credits entry was removed at the user's request.
 No endorsement by the creator, Formula 1 or any race team is implied.
