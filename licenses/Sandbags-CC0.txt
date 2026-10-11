@@ -1,0 +1,11 @@
+Simple Sandbags by JamesWhite
+Source: https://opengameart.org/content/simple-sandbags
+Original download: https://opengameart.org/sites/default/files/sandbag_model_1.zip
+Published: January 24, 2015
+License: Creative Commons CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Imported original OBJ (26 vertices / 24 quads / 48 triangles), preserving
+geometry, UVs and normals. Assigned supplied diffuse and normal textures and
+exported as a self-contained GLB. Scene uses rotated/scaled copies; no custom
+sandbag modeling. Original archive retained in assets/sandbag-original.zip.

@@ -1,5 +1,13 @@
 [
   {
+    "file": "sandbag.glb",
+    "bytes": 117064,
+    "sha256": "fdbb3b0031199f57eb6ca1513deeb8ba961b3ae302e2c3a16ed5f16fd3747c8a",
+    "source": "Simple Sandbags by JamesWhite; original OBJ and textures converted to embedded GLB",
+    "source_url": "https://opengameart.org/content/simple-sandbags",
+    "license": "CC0"
+  },
+  {
     "file": "formula2022.glb",
     "bytes": 2959344,
     "sha256": "8017633e3c697efdfdb8589b697cbab6cb9cb3b898e7cfd3501ae4ac6f17db3d",
