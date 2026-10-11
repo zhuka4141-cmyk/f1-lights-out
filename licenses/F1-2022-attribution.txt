@@ -1,0 +1,14 @@
+Asset: F1 2022
+Creator: Blender458
+Creator URL: https://sketchfab.com/Blender458
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License and full legal code: https://creativecommons.org/licenses/by/4.0/
+Distribution source: https://github.com/Pilot123321/RM-RAIN-MASTER
+File: public/assets/f1.glb (obtained there via FetchCFD)
+Source credit: https://github.com/Pilot123321/RM-RAIN-MASTER#credits
+Downloaded GLB SHA256: 8017633e3c697efdfdb8589b697cbab6cb9cb3b898e7cfd3501ae4ac6f17db3d
+Original GLB retained without file changes, 48,966 triangles.
+Runtime changes: material-based draw batching, proportional scaling, centering,
+orientation and paint/material adjustments. The mesh shape is preserved.
+This attribution is also available inside the game under Leaderboard > Asset credits.
+No endorsement by the creator, Formula 1 or any race team is implied.
