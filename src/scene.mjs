@@ -3,11 +3,13 @@ import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { RGBELoader } from '../vendor/RGBELoader.js';
 import { mergeGeometries } from '../vendor/BufferGeometryUtils.js';
 import { RULES } from './core.mjs';
+import { createRoadsideDetails } from './roadside.mjs';
+import { createCollisionEffects } from './collision-fx.mjs';
 
 const assetURL = file => new URL(`../assets/${file}`, import.meta.url).href;
 const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'grass',
   'grandStandCovered', 'pitsGarage', 'pitsOffice', 'pitsOfficeRoof', 'lightPostLarge',
-  'fenceStraight', 'barrierRed', 'barrierWhite', 'treeLarge', 'bannerTowerRed',
+  'fenceStraight', 'barrierRed', 'barrierWhite', 'bannerTowerRed',
   'flagCheckers', 'overhead', 'overheadLights', 'roadblock', 'roadblock-light'];
 
 // Only existing downloaded meshes are used. Copies, placement, UVs and materials
@@ -15,10 +17,11 @@ const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'gr
 export async function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   const mobile = matchMedia('(max-width: 600px)').matches;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 1.75));
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = mobile ? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.AgXToneMapping; renderer.toneMappingExposure = 1;
   container.appendChild(renderer.domElement);
   const scene = new THREE.Scene(); scene.fog = new THREE.Fog('#bfcbd0', 250, 780);
   const camera = new THREE.PerspectiveCamera(52, 1, .35, 1100);
@@ -42,13 +45,12 @@ export async function createScene(container) {
   environment.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = environment; scene.background = environment;
   scene.backgroundBlurriness = .035;
-  const ambient = new THREE.HemisphereLight('#d5e5ff', '#777667', .65); scene.add(ambient);
-  const sun = new THREE.DirectionalLight('#fff3df', 2.7);
+  const ambient = new THREE.HemisphereLight('#dce8ff', '#6f7164', .24); scene.add(ambient);
+  const sun = new THREE.DirectionalLight('#fff1dc', 3.4);
   sun.castShadow = true; sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
   Object.assign(sun.shadow.camera, { left: -38, right: 38, top: 38, bottom: -38, near: 5, far: 175 });
-  sun.shadow.normalBias = .035; sun.shadow.bias = .00012; sun.shadow.radius = 3.5;
-  sun.shadow.blurSamples = 8;
-  const sunOffset = new THREE.Vector3(-38, 82, 35), shadowFocus = new THREE.Vector3();
+  sun.shadow.normalBias = .025; sun.shadow.bias = -.00006; sun.shadow.radius = 2;
+  const sunOffset = new THREE.Vector3(-52, 68, 35), shadowFocus = new THREE.Vector3();
   const shadowRight = new THREE.Vector3().crossVectors(sunOffset, new THREE.Vector3(0, 1, 0)).normalize();
   const shadowUp = new THREE.Vector3().crossVectors(shadowRight, sunOffset).normalize();
   const shadowTexel = 76 / sun.shadow.mapSize.x;
@@ -65,17 +67,23 @@ export async function createScene(container) {
       if (mesh.material.name === 'tankco') { advertMeshes.push(mesh); return; }
       mesh.castShadow = true; mesh.receiveShadow = true;
       for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
-        material.envMapIntensity = .85;
+        material.envMapIntensity = .55;
         if (name === 'roadblock' || name === 'formula2022') continue;
         material.roughness = .8; material.metalness = .05;
         if (material.name === 'road') {
-          material.color.set('#d9dce0'); material.map = asphalt;
-          material.normalMap = asphaltNormal; material.normalScale = new THREE.Vector2(.4, .4);
+          material.color.set('#c0c3c4'); material.map = asphalt;
+          material.normalMap = asphaltNormal; material.normalScale = new THREE.Vector2(.48, .48);
           material.roughnessMap = asphaltRough; material.roughness = 1; material.metalness = 0;
         } else if (material.name === 'grass') {
           material.color.set('#c0c9a0'); material.map = grass; material.normalMap = grassNormal;
           material.normalScale = new THREE.Vector2(.35, .35); material.roughnessMap = grassRough;
           material.roughness = 1; material.metalness = 0;
+        } else if (name === 'fenceStraight' || name === 'lightPostLarge') {
+          material.color.set('#737a7b'); material.roughness = .55; material.metalness = .78;
+          material.normalMap = metalNormal; material.normalScale = new THREE.Vector2(.03, .03);
+          material.roughnessMap = metalRough;
+        } else if (name === 'barrierRed' || name === 'barrierWhite') {
+          material.color.set('#b6b3a7'); material.roughness = .95; material.metalness = 0;
         } else if (material.name === 'grey' || material.name === 'white') {
           material.color.set('#d2d6cf'); material.map = concrete; material.roughnessMap = concreteRough;
           material.normalMap = concreteNormal; material.normalScale = new THREE.Vector2(.2, .2);
@@ -83,12 +91,47 @@ export async function createScene(container) {
         } else if (material.name === 'glass') {
           material.color.set('#7c9da9'); material.roughness = .17; material.metalness = .12; material.envMapIntensity = 1.1;
         } else if (material.name === 'red') {
-          material.color.set('#b84335'); material.roughness = .68; material.metalness = 0;
+          material.color.set('#a52c23'); material.roughness = .68; material.metalness = 0;
         }
       }
     });
     advertMeshes.forEach(mesh => mesh.removeFromParent());
   }));
+
+  const [barrierModel, fenceKit, fenceAlpha, shutterModel] = await Promise.all([
+    loader.loadAsync(assetURL('models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02_1k.gltf')),
+    loader.loadAsync(assetURL('models/photoreal/modular_chainlink_fence/modular_chainlink_fence_1k.gltf')),
+    textureLoader.loadAsync(assetURL('models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_alpha_1k.png')),
+    loader.loadAsync(assetURL('models/photoreal/rollershutter_door/rollershutter_door_1k.gltf')),
+  ]);
+  // Select the authored straight module, retaining its PBR textures and shape.
+  const normalize = object => {
+    const model = object.clone(true), bounds = new THREE.Box3().setFromObject(model);
+    const center = bounds.getCenter(new THREE.Vector3());
+    model.position.add(new THREE.Vector3(-center.x, -bounds.min.y, -center.z));
+    const group = new THREE.Group(); group.add(model);
+    model.traverse(mesh => {
+      if (!mesh.isMesh) return;
+      for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+        material.envMapIntensity = .65;
+        for (const value of Object.values(material)) if (value?.isTexture) value.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        if (material.name.includes('_wire')) {
+          const map = material.map, alpha = fenceAlpha.clone();
+          alpha.wrapS = map.wrapS; alpha.wrapT = map.wrapT; alpha.offset.copy(map.offset);
+          alpha.repeat.copy(map.repeat); alpha.rotation = map.rotation; alpha.center.copy(map.center);
+          alpha.flipY = map.flipY; alpha.anisotropy = map.anisotropy;
+          material.alphaMap = alpha; material.alphaTest = .4; material.transparent = false;
+          material.alphaToCoverage = true; material.depthWrite = true; material.side = THREE.DoubleSide;
+          material.needsUpdate = true;
+        }
+      }
+    });
+    return group;
+  };
+  assets.realBarrier = normalize(barrierModel.scene);
+  assets.realFence = normalize(fenceKit.scene.getObjectByName('modular_chainlink_fence_double'));
+  assets.realShutter = normalize(shutterModel.scene.getObjectByName('rollershutter_door'));
+  const shutterSize = new THREE.Box3().setFromObject(assets.realShutter).getSize(new THREE.Vector3());
 
   const statics = new THREE.Group(); scene.add(statics);
   const place = (name, x, y, z, scale = 1, rotation = 0, target = statics) => {
@@ -117,23 +160,21 @@ export async function createScene(container) {
     place('grandStandCovered', -19, .05, z, 16, Math.PI / 2);
     if (i < 14 || i > 45) {
       place('pitsGarage', 18, .05, z, 14, -Math.PI / 2);
+      for (const offset of [-3.6, 3.6]) place('realShutter', 10.85, .37, z + offset,
+        [6 / shutterSize.x, 5.7 / shutterSize.y, 1], -Math.PI / 2);
       // The roof asset includes its office floor. Stacking a second office at
       // the same facade plane caused the moving camera's visible z-fighting.
       if (i % 2 === 0) place('pitsOfficeRoof', 19, 9.8, z, 14, -Math.PI / 2);
     }
     place('lightPostLarge', -11, .2, z - 6, 11, Math.PI / 2);
     place('lightPostLarge', 11, .2, z - 6, 11, -Math.PI / 2);
-    place('fenceStraight', -9, .2, z, [22, 9, 9], Math.PI / 2);
-    place('fenceStraight', 9, .2, z, [22, 9, 9], Math.PI / 2);
+    for (const side of [-1, 1]) place('fenceStraight', side * 9.05, .36, z, [22, 6.4, 1.4], Math.PI / 2)
+      .traverse(mesh => { if (mesh.isMesh) mesh.userData.detailKind = 'fence'; });
   }
   for (let i = 0; i < 330; i++) {
     const z = 18 - i * 4.5;
-    place(i % 2 ? 'barrierRed' : 'barrierWhite', -8.4, .2, z, 18, Math.PI / 2);
-    place(i % 2 ? 'barrierWhite' : 'barrierRed', 8.4, .2, z, 18, Math.PI / 2);
-  }
-  for (let i = 0; i < 78; i++) {
-    place('treeLarge', -34 - i % 3 * 6, 0, -i * 18 - 25, 14 + i % 4 * 2);
-    place('treeLarge', 37 + i % 4 * 5, 0, -i * 18 - 33, 15 + i % 3 * 3);
+    for (const side of [-1, 1]) place('barrierWhite', side * 8.4, .36, z, [18, 1.12 / .1312, .72 / .123], Math.PI / 2)
+      .traverse(mesh => { if (mesh.isMesh) mesh.userData.detailKind = 'barrier'; });
   }
   place('bannerTowerRed', -11, .1, -34, 13); place('bannerTowerRed', 11, .1, -34, 13, Math.PI);
   place('flagCheckers', -11, .2, 10, 9); place('flagCheckers', 11, .2, 10, 9);
@@ -144,14 +185,16 @@ export async function createScene(container) {
   const batches = new Map();
   statics.traverse(mesh => {
     if (!mesh.isMesh) return;
-    const key = `${mesh.geometry.uuid}/${Array.isArray(mesh.material) ? mesh.material.map(m => m.uuid).join() : mesh.material.uuid}/${mesh.castShadow}`;
-    if (!batches.has(key)) batches.set(key, { geometry: mesh.geometry, material: mesh.material, matrices: [], shadow: mesh.castShadow });
+    const kind = mesh.userData.detailKind || '';
+    const key = `${mesh.geometry.uuid}/${Array.isArray(mesh.material) ? mesh.material.map(m => m.uuid).join() : mesh.material.uuid}/${mesh.castShadow}/${kind}`;
+    if (!batches.has(key)) batches.set(key, { geometry: mesh.geometry, material: mesh.material, matrices: [], shadow: mesh.castShadow, kind });
     batches.get(key).matrices.push(mesh.matrixWorld.clone());
   });
   scene.remove(statics);
+  const proxyBatches = [];
   for (const batch of batches.values()) {
     let geometry = batch.geometry;
-    if (!Array.isArray(batch.material) && ['road', 'grass', 'grey', 'white'].includes(batch.material.name)) {
+    if (!batch.kind && !Array.isArray(batch.material) && ['road', 'grass', 'grey', 'white'].includes(batch.material.name)) {
       geometry = geometry.clone();
       const first = batch.matrices[0]; geometry.applyMatrix4(first);
       worldUV(geometry, batch.material.name === 'grey' || batch.material.name === 'white' ? 3 : 8, 1, true);
@@ -161,7 +204,15 @@ export async function createScene(container) {
     batch.matrices.forEach((matrix, i) => instance.setMatrixAt(i, matrix));
     instance.castShadow = batch.shadow; instance.receiveShadow = true;
     instance.computeBoundingSphere(); scene.add(instance);
+    if (batch.kind) {
+      instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      batch.geometry.computeBoundingBox();
+      const center = batch.geometry.boundingBox.getCenter(new THREE.Vector3());
+      proxyBatches.push({ mesh:instance, kind:batch.kind, matrices:batch.matrices,
+        centers:batch.matrices.map(matrix => center.clone().applyMatrix4(matrix).z) });
+    }
   }
+  const roadside = createRoadsideDetails(scene, assets, proxyBatches, mobile);
 
   const laneX = (.32745 - .5) * 18, gridNose = (1 - .4228) * 18 + .32;
   // Merge the existing Formula meshes by material, preserving the downloaded
@@ -175,8 +226,8 @@ export async function createScene(container) {
     const key = painted ? 'paint' : material.name === 'tyre' ? 'tyre' : material.color.r < .015 ? 'carbon' : material.color.getHexString();
     if (!carMaterials.has(key)) {
       const surface = new THREE.MeshPhysicalMaterial({ color: painted ? '#d52d21' : key === 'tyre' ? '#141716' : key === 'carbon' ? '#1b2227' : material.color,
-        roughness: painted ? .24 : key === 'tyre' ? .92 : .52, metalness: painted ? .35 : key === 'carbon' ? .28 : .14,
-        clearcoat: painted ? 1 : .05, clearcoatRoughness: .16, envMapIntensity: painted ? .85 : .4,
+        roughness: painted ? .3 : key === 'tyre' ? .92 : .52, metalness: painted ? .16 : key === 'carbon' ? .1 : .14,
+        clearcoat: painted ? 1 : .05, clearcoatRoughness: .22, envMapIntensity: painted ? .7 : .4,
         roughnessMap: painted ? null : metalRough, normalMap: painted ? null : metalNormal,
         normalScale: new THREE.Vector2(key === 'tyre' ? .05 : .025, key === 'tyre' ? .05 : .025) });
       carMaterials.set(key, { material: surface, geometries: [] });
@@ -300,6 +351,7 @@ export async function createScene(container) {
   roadblockRow.updateMatrixWorld(true);
   const frontZ = new THREE.Box3().setFromObject(roadblockRow).max.z;
   roadblockRow.position.z += roadblockZ - frontZ;
+  const collisionFX = createCollisionEffects(scene, roadblockRow, mobile, reducedMotion);
 
   // Paint the finish band on a thin copy of the downloaded Kenney road surface.
   // The three alternating rows follow real circuit paint; no new mesh is built.
@@ -336,7 +388,6 @@ export async function createScene(container) {
   });
 
   let lastLights = -1, lastTime = performance.now(), resultBlend = 0;
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function resize() {
     renderer.setSize(container.clientWidth, container.clientHeight, false);
     camera.aspect = container.clientWidth / container.clientHeight;
@@ -348,7 +399,9 @@ export async function createScene(container) {
   }
   resize(); window.addEventListener('resize', resize);
   return {
-    reset() { car.position.set(laneX, .37, carStartZ); car.rotation.y = Math.PI; resultBlend = 0; },
+    diagnostics() { return { calls:renderer.info.render.calls, triangles:renderer.info.render.triangles,
+      fence:assets.realFence.children.flatMap(group => { const materials = []; group.traverse(mesh => { if (mesh.isMesh) materials.push({ name:mesh.material.name, alpha:!!mesh.material.alphaMap }); }); return materials; }) }; },
+    reset() { car.position.set(laneX, .37, carStartZ); car.rotation.y = Math.PI; resultBlend = 0; collisionFX.reset(); },
     setLights(count) {
       if (count === lastLights) return; lastLights = count;
       lights.forEach((surfaces, i) => surfaces.forEach(material => { material.color.set(i < count ? '#ff2b20' : '#160b0c'); material.emissiveIntensity = i < count ? 2.1 : 0; }));
@@ -358,11 +411,22 @@ export async function createScene(container) {
       car.position.z = carStartZ - drive.distance;
       const skid = drive.skidded ? 1 - Math.exp(-drive.skidTime * 3) : 0;
       car.position.x = laneX + skid * 2.8; car.rotation.y = Math.PI - skid * 1.15;
+      roadside.update(car.position.z);
+      if (drive.result?.type === 'collision') collisionFX.start(now, { x:car.position.x, z:roadblockZ, speed:drive.result.stats.outcomeSpeed });
+      const impactAge = collisionFX.update(now);
       const narrow = container.clientWidth < 600;
       const vibration = !reducedMotion && drive.phase === 'driving' ? Math.sin(now * .048) * .008 * Math.min(drive.speed / 10, 1) : 0;
       const eye = new THREE.Vector3(laneX, 3.65 + vibration, car.position.z + (narrow ? 11.7 : 10.3));
       const target = new THREE.Vector3(laneX, 1.35, car.position.z - 22);
-      if (drive.phase === 'stopped') {
+      if (impactAge !== null) {
+        const blend = reducedMotion ? 1 : 1 - Math.exp(-impactAge * 3);
+        eye.lerp(new THREE.Vector3(laneX + 5, 6, car.position.z + 14), blend);
+        target.set(laneX, 2.2, roadblockZ - 4);
+        if (!reducedMotion) {
+          const shake = .14 * Math.exp(-impactAge * 7);
+          eye.x += Math.sin(now * .17) * shake; eye.y += Math.cos(now * .21) * shake;
+        }
+      } else if (drive.phase === 'stopped') {
         resultBlend = reducedMotion ? 1 : Math.min(1, resultBlend + dt / .9);
         const resultEye = new THREE.Vector3(laneX + 10, 8, car.position.z + 12);
         eye.lerp(resultEye, resultBlend); target.lerp(new THREE.Vector3(laneX, 1, car.position.z - 4), resultBlend);

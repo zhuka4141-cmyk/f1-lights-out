@@ -1,7 +1,7 @@
 export const RULES = Object.freeze({
   distance: 1250,
   roadblockGap: 10,
-  maxSpeed: 300 / 3.6,
+  maxSpeed: 250 / 3.6,
   acceleration: 10,
   coastDeceleration: 1.1,
   brakeBase: 14.352,
@@ -179,7 +179,7 @@ export class DriveChallenge {
   }
 }
 
-export const STORAGE_KEY = 'lights-out-finish-line-leaderboard-v7';
+export const STORAGE_KEY = 'lights-out-250-finish-line-leaderboard-v8';
 export const overallScore = entry => entry.totalMs == null ? null
   : 50 / (1 + entry.distanceCm / 500) + 30 / (1 + entry.totalMs / 20000) + 20 / (1 + entry.ms / 300);
 const compare = (a, b) => (overallScore(b) ?? -1) - (overallScore(a) ?? -1)

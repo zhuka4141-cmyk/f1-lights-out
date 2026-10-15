@@ -18,6 +18,9 @@ https://polyhaven.com/a/concrete_wall_001
 https://polyhaven.com/a/aerial_grass_rock
 https://polyhaven.com/a/rusty_painted_metal
 https://polyhaven.com/a/autumn_field_puresky
+https://polyhaven.com/a/concrete_road_barrier_02
+https://polyhaven.com/a/modular_chainlink_fence
+https://polyhaven.com/a/rollershutter_door
 CC0 / Public Domain
 https://polyhaven.com/license
 

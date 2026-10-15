@@ -331,5 +331,185 @@
     "source_url": "https://github.com/jpt/barlow",
     "license": "SIL OFL 1.1",
     "changes": ""
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02_1k.gltf",
+    "bytes": 2910,
+    "sha256": "52d13b5105ce861db5dd1413a1a924ad5594dee5a8eb37dbe1a9df441fcd7caf",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02.bin",
+    "bytes": 542900,
+    "sha256": "254ee05467733e224e127dc76e019e5b5211c0da4248fa3fc75117ec005d7c90",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_arm_1k.jpg",
+    "bytes": 717138,
+    "sha256": "6fb282f242ce86a3e44663678c2e0366c37de8244b08acc003d99771cb780e53",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_nor_gl_1k.jpg",
+    "bytes": 923479,
+    "sha256": "42ec702843df209f0aef1d247c76dfb91385f0bf3b226b752d22a4c0e3780a31",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_diff_1k.jpg",
+    "bytes": 741673,
+    "sha256": "9329260ebfc8632a5d47d9b344ab6f916e26604e73ebd2c495fee544df4bdefa",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/modular_chainlink_fence_1k.gltf",
+    "bytes": 41838,
+    "sha256": "4204f151f809b4abd41ea0b18b1b6a5d9c23e6bcc0b6a81e44d03690f26604e9",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/modular_chainlink_fence.bin",
+    "bytes": 3168016,
+    "sha256": "be9ea1817089fd35b0927a8271358f6abd2ec80b306a085de435613d936fcb9a",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_posts_nor_gl_1k.jpg",
+    "bytes": 505743,
+    "sha256": "b43b8214c90a55bb84222d2a27430b31080d68dc14879632b86dbd316cb5f060",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_arm_1k.jpg",
+    "bytes": 694743,
+    "sha256": "88af8364890b0645cd730eca11b30e6cd1c7578ad3aa1f012bb84915b9be5a03",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_nor_gl_1k.jpg",
+    "bytes": 664165,
+    "sha256": "5cbf280f80e948de2422f0bb2fe2223a3b6f8e6fc75f54b00cd8d3e070938230",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_diff_1k.jpg",
+    "bytes": 670536,
+    "sha256": "79253847a00b67a616148d753df8f4e44ba4615f848b82310426618b5a8dd79b",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_posts_arm_1k.jpg",
+    "bytes": 839858,
+    "sha256": "1694ecc2746ddaa93951ea5d2f2b830f544adf929f7ac9fae855f8b8fdfbad50",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_posts_diff_1k.jpg",
+    "bytes": 707116,
+    "sha256": "ec273fedef04fbcac26460b996beeeceeff3f91c1bea73ed2c6db1d0fdb30b73",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_alpha_1k.png",
+    "bytes": 162276,
+    "sha256": "92ea700345a61f78fdbc3d4ff2ba4ea580f7fdfa167b3963b1167e9aaba88255",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/rollershutter_door/rollershutter_door_1k.gltf",
+    "bytes": 5378,
+    "sha256": "913b2689f88f99cb75f8a6575e315ee90437e59976a2a3ce0b260d5636a14d30",
+    "source": "Poly Haven · rollershutter_door",
+    "source_url": "https://polyhaven.com/a/rollershutter_door",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/rollershutter_door/rollershutter_door.bin",
+    "bytes": 46192,
+    "sha256": "155cd44e199d4edd19769503c7ed22b0b4007869166d0193a7e2d5e3134dc38d",
+    "source": "Poly Haven · rollershutter_door",
+    "source_url": "https://polyhaven.com/a/rollershutter_door",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_arm_1k.jpg",
+    "bytes": 626069,
+    "sha256": "0a45cf8585a339ae542ef891f3aa697258079b98f1755b2d6716ea542d3de14a",
+    "source": "Poly Haven · rollershutter_door",
+    "source_url": "https://polyhaven.com/a/rollershutter_door",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_diff_1k.jpg",
+    "bytes": 600354,
+    "sha256": "b8cd7ad14fe5c691484fe240213c379bf18f21336afe6622bfa20c731eca010d",
+    "source": "Poly Haven · rollershutter_door",
+    "source_url": "https://polyhaven.com/a/rollershutter_door",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_nor_gl_1k.jpg",
+    "bytes": 381716,
+    "sha256": "3eaad465ac23e4b3d5fbf2e315b738f8d3039cd244a69ab8adcc7a0e786cdffb",
+    "source": "Poly Haven · rollershutter_door",
+    "source_url": "https://polyhaven.com/a/rollershutter_door",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_graffiti_diff_1k.jpg",
+    "bytes": 683274,
+    "sha256": "7438bee86fc32e3b6ca23ec694f179576749554dff7c3b281f30acd917c250af",
+    "source": "Poly Haven · rollershutter_door",
+    "source_url": "https://polyhaven.com/a/rollershutter_door",
+    "license": "CC0",
+    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
   }
 ]

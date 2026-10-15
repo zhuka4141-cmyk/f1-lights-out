@@ -2,12 +2,13 @@ import { RULES, StartSequence, DriveChallenge, LocalLeaderboard, rankLeaderboard
 import { createScene } from './scene.mjs';
 import { renderReport } from './report.mjs';
 import { renderLeaderboard } from './leaderboard.mjs';
+import { COLLISION_REPLAY_MS } from './impact.mjs';
 
 const $ = id => document.getElementById(id);
 const sequence = new StartSequence(), drive = new DriveChallenge();
 const board = new LocalLeaderboard({ getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) });
 const held = new Set();
-let world, driveClock = 0, keyHeld = false, resultShown = false, selectedId = null;
+let world, driveClock = 0, keyHeld = false, resultShown = false, selectedId = null, collisionAt = null;
 const activeDrive = () => ['driving', 'skidding'].includes(drive.phase);
 function advance(now = performance.now()) {
   if (activeDrive()) { drive.step(Math.max(0, (now - driveClock) / 1000)); driveClock = now; }
@@ -27,7 +28,8 @@ function resetConsent() {
 function begin() {
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
   held.clear(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
-  resultShown = false; $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
+  resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
+  $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
   $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('throttleButton').disabled = false; $('throttleButton').classList.remove('ready', 'down');
   $('pedalHint').textContent = '灯灭后，再踩下'; pedalMode(false);
@@ -36,6 +38,7 @@ function begin() {
 function showResult(result) {
   if (!result || resultShown) return;
   resultShown = true; held.clear();
+  $('leaderboardButton').disabled = false;
   resetConsent(); renderReport(result); board.offer(result);
   $('scoreConsent').hidden = result.type !== 'valid';
   $('introPanel').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
@@ -74,9 +77,11 @@ function cancel() {
 function home(event) {
   event?.preventDefault(); if (!world) return;
   held.clear(); keyHeld = false; resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
-  resultShown = false; $('resultPanel').hidden = $('resultScrim').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
+  resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
+  $('resultPanel').hidden = $('resultScrim').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('introPanel').hidden = false; $('throttleButton').disabled = true;
   $('throttleButton').classList.remove('ready', 'down'); pedalMode(false);
+  $('pedalHint').textContent = '灯灭后，再踩下';
   document.body.dataset.phase = 'idle'; $('resultAnnouncement').textContent = ''; $('startButton').focus({ preventScroll: true });
 }
 function renderBoard() {
@@ -151,9 +156,16 @@ const rpm = [...$('rpmStrip').children];
 function frame(now) {
   if (world) {
     sequence.tick(now); advance(now); world.setLights(sequence.lights);
-    if (!resultShown && drive.result) showResult(drive.result);
+    if (!resultShown && drive.result?.type === 'collision') {
+      if (collisionAt === null) {
+        collisionAt = now; held.clear(); keyHeld = false;
+        $('throttleButton').disabled = $('leaderboardButton').disabled = true;
+        $('liveReaction').hidden = $('brakeGauge').hidden = true;
+      }
+      if (now - collisionAt >= COLLISION_REPLAY_MS) showResult(drive.result);
+    } else if (!resultShown && drive.result) showResult(drive.result);
     else if (!resultShown && !activeDrive() && sequence.result?.type !== 'valid' && sequence.result) showResult(sequence.result);
-    const phase = resultShown ? 'result' : drive.phase === 'skidding' ? 'skidding'
+    const phase = resultShown ? 'result' : collisionAt !== null ? 'crashing' : drive.phase === 'skidding' ? 'skidding'
       : drive.phase === 'driving' ? drive.braking ? 'braking' : drive.propulsionCut ? 'coasting' : 'driving' : sequence.phase;
     document.body.dataset.phase = phase;
     $('throttleButton').classList.toggle('ready', phase === 'go');

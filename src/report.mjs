@@ -17,7 +17,9 @@ export function renderChart(target, stats, type) {
   target.replaceChildren();
   if (!stats?.history?.length) {
     const empty = document.createElement('div'); empty.className = 'chart-empty';
-    empty.textContent = type === 'collision' ? '本轮未踩刹车，车辆以 300 km/h 撞上路障。' : '本轮尚未刹车，暂无制动曲线。';
+    empty.textContent = type === 'collision'
+      ? `本轮未踩刹车，车辆以 ${(stats?.outcomeSpeed ?? RULES.maxSpeed * 3.6).toFixed(1)} km/h 撞上路障。`
+      : '本轮尚未刹车，暂无制动曲线。';
     target.append(empty); return;
   }
   const history = stats.history, width = 420, height = 196;

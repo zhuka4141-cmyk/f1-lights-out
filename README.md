@@ -4,12 +4,13 @@
 
 ## 当前规则
 
-- 赛程 **1250 米**，最高速度 **300 km/h**，自动加速。
+- 赛程 **1250 米**，最高速度 **250 km/h**，自动加速。
 - 第一次按下刹车会立即、永久切断本轮动力。之后松开踏板只会滑行减速，重新按下则继续手动刹车；不会再自动加速。
 - 滑行减速度为 **1.1 m/s²**；刹车减速度随压力增加，保留逐步建立压力、松开卸压的操作方式。
-- 压力按实时车速增长：每秒 `18.75 + 75 × (当前 km/h ÷ 300)` 个百分点，比上版增长快 25%；松开每秒卸压 100 个百分点。
+- 压力按实时车速增长：每秒 `18.75 + 75 × (当前 km/h ÷ 250)` 个百分点；松开每秒卸压 100 个百分点。
 - 压力 **100% 时仍能制动，达到 115% 且仍在行驶才会锁死打滑**。这是“打滑压力再加 15%”的实现方式；未改为真实轮胎摩擦模型。
 - 终点线位于 **1250 米**，路障前表面位于 **1260 米**，两者之间有 10 米缓冲区。越线停稳为越线失败；车头接触路障为碰撞失败。两种失败均为 0 分，不可上榜。
+- 碰撞后先播放 **2.6 秒**路障撞飞、翻滚、火焰、火花与烟尘，再显示结算；碎片方向、速度及旋转每次随机，冲击强度随碰撞速度变化。复用下载路障的原有部件，不新增自制路障模型。效果与赛果计时分离，重试会恢复整排路障并清除特效。
 - 横跨车道的三排黑白棋盘格标线贴合沥青并接受光照和阴影。标线朝向来车的近端与 1250 米测距平面对齐，行驶数据、赛后距离与排行榜均以车头到此平面的距离为准。
 - 赛道两侧不再摆放黑色米数距离牌，剩余距离由行驶仪表显示。
 - 行驶距离与起步反应移到画面右侧，采用透明背景、白色大字和文字阴影，提升浅色建筑前的可读性。界面统一为黑、白、赛车红。
@@ -52,14 +53,17 @@ node preview.cjs
 
 排行榜分为**距终点线、起步反应、完成时间、综合得分**四栏，各自独立排序；前三项越小越好，综合得分越高越好。每个名字在每栏只出现一次，取该车手此项最佳回合；相同数值并列排名。综合分按展示的两位小数判定并列。距离用米，反应用毫秒，完成时间用秒。面板保留栏目标题、名次、车手与数值，删除各栏规则说明及底部注记。
 
-终点线新规则使用 `lights-out-finish-line-leaderboard-v7`。原来的 `lights-out-roadblock-leaderboard-v6` 与 `lights-out-braking-leaderboard-v5` 不会被覆盖或删除，不与新距离基准和物理规则混排。清除浏览器数据或更换设备后，本地记录不会保留。
+250 km/h 规则使用 `lights-out-250-finish-line-leaderboard-v8`。原 300 km/h 的 `lights-out-finish-line-leaderboard-v7`、以及 v6 和 v5 数据不会被覆盖或删除，不与新极速和物理规则混排。清除浏览器数据或更换设备后，本地记录不会保留。
 
 ## 模型、实拍纹理与光照
 
 没有创建新的车、路障、赛道或灯具模型。保留原下载模型的网格形状，使用复制、摆放、材质调整和现成部件组合。
 
 - 赛车：**F1 2022**，Blender458，CC BY 4.0；沿用原项目由 FetchCFD / [RM-RAIN-MASTER](https://github.com/Pilot123321/RM-RAIN-MASTER#credits) 获取的模型。合并绘制，调整车漆、金属、轮胎材质，保留原网格形状。
-- 赛道、看台、护栏和发车灯：[Kenney Racing Kit](https://kenney.nl/assets/racing-kit)，CC0，沿用原项目。
+- 赛道、看台、远景护栏和发车灯：[Kenney Racing Kit](https://kenney.nl/assets/racing-kit)，CC0，沿用原项目。
+- 近景混凝土护栏：[Concrete Road Barrier 02](https://polyhaven.com/a/concrete_road_barrier_02)，Poly Haven，CC0。使用原 glTF 和实拍 PBR 贴图，保留破损边缘、坑洞和表面磨损；近景使用原网格，远景保留与之尺寸一致的轻量代理。
+- 铁丝网：[Modular Chainlink Fence](https://polyhaven.com/a/modular_chainlink_fence)，Poly Haven，CC0。选取现成的直线模块，配合官方透明遮罩、法线、金属和粗糙度贴图；透明裁剪和 alpha to coverage 避免网片排序闪烁。
+- 维修区卷帘门：[Rollershutter Door](https://polyhaven.com/a/rollershutter_door)，Poly Haven，CC0。使用无涂鸦版本的现成网格及金属、污渍、凹凸纹理，装配在原有车库正面。
 - 终点标线：参考 [Getty Images 的真实赛道终点线照片](https://www.gettyimages.hk/%E5%9C%96%E7%89%87/race-track-finish-line) 中的横向黑白棋盘格路面标线；使用现成 Kenney 赛道路面网格的薄层副本调整材质与 UV，叠加沥青法线和粗糙度。
 - 黄黑路障：[Traffic Barrier](https://poly.pizza/m/cM3aJPU9NS)，**Quaternius**，CC0。保留 A 字架和斜纹网格，改为黄黑配色，复制原有横板部件组成双横板，整排摆放在终点线后 10 米处。
 - 圆形警示灯：[Kenney City Kit — Roads](https://kenney.nl/assets/city-kit-roads)，CC0。使用 construction-light 原模型的圆形灯头部件，旋转、缩放并调整琥珀色发光材质。
@@ -71,7 +75,9 @@ node preview.cjs
 - Three.js **0.160.1** 及其 GLTFLoader、RGBELoader、BufferGeometryUtils，MIT，来自官方 npm 包。
 - Barlow Condensed ExtraBold 字体，SIL OFL 1.1，沿用原项目。
 
-使用 PBR 材质、HDR 环境反射、暖色太阳与冷色天空补光、柔和阴影和 ACES 色调映射增强原有模型质感。桌面使用 2048 像素 VSM 柔和阴影，手机使用 1024 像素 PCF 阴影；移动阴影相机对齐阴影纹素以减少闪烁。降低全屏暗色叠层，调整玻璃反射、车漆与混凝土表面。原赛道仍保留其低多边形风格，不是照片级重建。
+使用 PBR 材质、HDR 环境反射、暖色斜射太阳与冷色天空补光、柔和阴影和 AgX 色调映射，保留亮部细节。桌面使用 2048 像素 PCF 阴影，手机使用 1024 像素 PCF 阴影；移动阴影相机对齐阴影纹素以减少闪烁。围栏和灯杆使用金属材质，墙体使用混凝土，避免混用；移除比例突兀的锥形树木。原有赛道和看台的几何轮廓仍带有低多边形风格。
+
+写实护栏和铁丝网使用实例化的移动细节池，仅在车辆附近显示原始高细节网格；远处恢复轻量代理。手机的细节范围、阴影贴图和像素比更低。所有素材均在本地 assets 内，页面不依赖素材站在线加载。
 
 右侧维修建筑移除 TANKCO 广告面，并取消与自带办公室的屋顶模型重复叠放的办公室层，修复共面表面在移动时闪烁的问题。
 
@@ -84,14 +90,17 @@ index.html             页面结构与模块入口
 styles.css             桌面、手机界面与压力仪表
 src/core.mjs           发车、车辆物理、遥测及本地排行榜
 src/scene.mjs          现成模型、材质、赛道、相机及光照
+src/roadside.mjs       写实护栏、铁丝网与远景代理调度
+src/collision-fx.mjs   原路障部件碎片、火焰、烟尘与火花
+src/impact.mjs         与赛果分离的碎片轨迹计算
 src/report.mjs         结算统计与 SVG 曲线
 src/leaderboard.mjs    四项独立排行榜展示
 src/app.mjs            键盘/触屏交互与游戏状态
-assets/models/         原下载 GLB 模型与警示灯贴图
+assets/models/         原下载 GLB、Poly Haven glTF 与 PBR 贴图
 assets/textures/       Poly Haven 实拍 PBR 与 HDR
 vendor/                本地 Three.js 渲染库及加载器
-tests/core.test.mjs    物理与成绩存储回归测试
+tests/                物理、成绩存储与碎片轨迹回归测试
 preview.cjs            无依赖本地 HTTP 预览
 ```
 
-运行回归测试：`node --test tests/core.test.mjs`。测试覆盖极速、动力切断、滑行、压力建立、115% 打滑、终点线前停车、越线与路障碰撞的不同判定、不同帧率/长帧碰撞、实际碰撞曲线、发车、重置、存储同意流程、四项独立排名、各项最佳回合和并列排名。
+运行回归测试：`node --test tests/*.test.mjs`。17 项测试覆盖 250 km/h 极速、动力切断、滑行、压力建立、115% 打滑、终点线前停车、越线与路障碰撞的不同判定、不同帧率/长帧碰撞、实际碰撞曲线、发车、重置、存储同意流程、四项独立排名、各项最佳回合和并列排名，以及碎片冲击方向、速度变化、随机性、反弹、落地和跳帧轨迹稳定性。
