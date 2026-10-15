@@ -1,0 +1,27 @@
+Additional CC0 assets
+====================
+
+Traffic Barrier by Quaternius
+https://poly.pizza/m/cM3aJPU9NS
+https://static.poly.pizza/bb0861ab-63dd-4f72-8697-f75b8a2e3d93.glb
+CC0 / Public Domain
+Original geometry retained. Palette changed, existing rail copied, instances assembled into a row.
+
+construction-light from City Kit — Roads by Kenney
+https://kenney.nl/assets/city-kit-roads
+CC0 / Public Domain
+Original circular lens section extracted and reused, rotated and scaled. Original triangle shapes retained.
+
+Poly Haven PBR textures and HDRI
+https://polyhaven.com/a/asphalt_track
+https://polyhaven.com/a/concrete_wall_001
+https://polyhaven.com/a/aerial_grass_rock
+https://polyhaven.com/a/rusty_painted_metal
+https://polyhaven.com/a/autumn_field_puresky
+CC0 / Public Domain
+https://polyhaven.com/license
+
+CC0 1.0 Universal legal text:
+https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+These assets were downloaded, not newly modeled. Credits are retained as a courtesy even though CC0 does not require attribution.

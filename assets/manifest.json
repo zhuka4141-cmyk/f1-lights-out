@@ -1,154 +1,335 @@
 [
   {
-    "file": "sandbag.glb",
-    "bytes": 117064,
-    "sha256": "fdbb3b0031199f57eb6ca1513deeb8ba961b3ae302e2c3a16ed5f16fd3747c8a",
-    "source": "Simple Sandbags by JamesWhite; original OBJ and textures converted to embedded GLB",
-    "source_url": "https://opengameart.org/content/simple-sandbags",
-    "license": "CC0"
-  },
-  {
-    "file": "formula2022.glb",
-    "bytes": 2959344,
-    "sha256": "8017633e3c697efdfdb8589b697cbab6cb9cb3b898e7cfd3501ae4ac6f17db3d",
-    "source": "F1 2022 by Blender458, via FetchCFD / Pilot123321 RM-RAIN-MASTER",
-    "source_url": "https://raw.githubusercontent.com/Pilot123321/RM-RAIN-MASTER/main/public/assets/f1.glb",
-    "license": "CC BY 4.0"
-  },
-  {
-    "file": "roadStraightLong.glb",
-    "bytes": 3652,
-    "sha256": "373339cbec076e9ae2dbb77795826268d2b21bf4bea48b3e58ad8267b5d281e4",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "roadStartPositions.glb",
-    "bytes": 5444,
-    "sha256": "6b4493c4c3b80f7dc4fe99245b64bdec788e5e4001f5db003b9eb4491359e3c4",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "overheadRoundColored.glb",
-    "bytes": 8064,
-    "sha256": "5e67a2bf6e4d61d0b7f2c5b611d50198e710bc47018e26b0df9c1b02f27d2583",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "grass.glb",
-    "bytes": 1496,
-    "sha256": "892ca5d51fd4f733db7df48161e1fec2372880787ba1dc30ea1ff47ba342fbe8",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "grandStandCovered.glb",
-    "bytes": 15200,
-    "sha256": "48fc8e7eace9969a849805bddd5dce2bf1244129f46ae18f7dc8499fe1792b50",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "pitsGarage.glb",
-    "bytes": 13028,
-    "sha256": "db73d2ebd70763380ef872ffd2a399eb72c979f96c5a3c1ab377d93670204a23",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "pitsOffice.glb",
-    "bytes": 8184,
-    "sha256": "32a39cf3b1051d651f6cc28e2febf3d2752c7120206e5688c0a45b93b7eea625",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "pitsOfficeRoof.glb",
-    "bytes": 11604,
-    "sha256": "144c15e740c8b11eff72f391f2ce543cd02299ffa872d49d0e910f697bb4c1e6",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "barrierRed.glb",
-    "bytes": 3244,
-    "sha256": "6d7de595a92507af6fcb40fe5a62730925ea23f1f8c727b8ecdec9eba9b98156",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "barrierWhite.glb",
-    "bytes": 3252,
-    "sha256": "44bf654b08bb96bd0e9a70c00dab35b0b23df955d3390ec8ede89c20ad64871a",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "fenceStraight.glb",
-    "bytes": 7756,
-    "sha256": "12fac1aea8f7d8d138a2a8820c7476187fb25a7c39963bfef250c2e8120fba68",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "treeLarge.glb",
-    "bytes": 6964,
-    "sha256": "3fcba4474bc490a5e589ce4924e972ca629029f2ade17a20f4ca3a7f253a3168",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "overhead.glb",
-    "bytes": 9188,
-    "sha256": "8c38e92377eaeafee28a88f9fe10a580f1da984d3fa6b4b35c08ed62e2db6ff2",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "overheadLights.glb",
-    "bytes": 26068,
-    "sha256": "8239fa98d2c950d7aba67ecf49dc92af18ee0da92ed96736a711b22e90e795cd",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "lightPostLarge.glb",
-    "bytes": 23536,
-    "sha256": "f41b4599752cf82ad87c8626396a36517d36db41a52ab33084a8b7de7d13f064",
-    "source": "Kenney Racing Kit 2.0",
-    "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
-  },
-  {
-    "file": "bannerTowerRed.glb",
+    "file": "assets/models/bannerTowerRed.glb",
     "bytes": 33992,
     "sha256": "16b22cccce7d97bf6f8c8333a0048cd14f986d32ae7115aa38107bb78ebfeea2",
     "source": "Kenney Racing Kit 2.0",
     "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
   },
   {
-    "file": "flagCheckers.glb",
+    "file": "assets/models/barrierRed.glb",
+    "bytes": 3244,
+    "sha256": "6d7de595a92507af6fcb40fe5a62730925ea23f1f8c727b8ecdec9eba9b98156",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/barrierWhite.glb",
+    "bytes": 3252,
+    "sha256": "44bf654b08bb96bd0e9a70c00dab35b0b23df955d3390ec8ede89c20ad64871a",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/fenceStraight.glb",
+    "bytes": 7756,
+    "sha256": "12fac1aea8f7d8d138a2a8820c7476187fb25a7c39963bfef250c2e8120fba68",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/flagCheckers.glb",
     "bytes": 15188,
     "sha256": "2feb99a4974fc82f90b43436421feb0874c074d4ea685d9673c6803429fd32ba",
     "source": "Kenney Racing Kit 2.0",
     "source_url": "https://kenney.nl/assets/racing-kit",
-    "license": "CC0"
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/formula2022.glb",
+    "bytes": 2959344,
+    "sha256": "8017633e3c697efdfdb8589b697cbab6cb9cb3b898e7cfd3501ae4ac6f17db3d",
+    "source": "F1 2022 by Blender458, via FetchCFD / Pilot123321 RM-RAIN-MASTER",
+    "source_url": "https://raw.githubusercontent.com/Pilot123321/RM-RAIN-MASTER/main/public/assets/f1.glb",
+    "license": "CC BY 4.0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/grandStandCovered.glb",
+    "bytes": 15200,
+    "sha256": "48fc8e7eace9969a849805bddd5dce2bf1244129f46ae18f7dc8499fe1792b50",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/grass.glb",
+    "bytes": 1496,
+    "sha256": "892ca5d51fd4f733db7df48161e1fec2372880787ba1dc30ea1ff47ba342fbe8",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/lightPostLarge.glb",
+    "bytes": 23536,
+    "sha256": "f41b4599752cf82ad87c8626396a36517d36db41a52ab33084a8b7de7d13f064",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/overhead.glb",
+    "bytes": 9188,
+    "sha256": "8c38e92377eaeafee28a88f9fe10a580f1da984d3fa6b4b35c08ed62e2db6ff2",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/overheadLights.glb",
+    "bytes": 26068,
+    "sha256": "8239fa98d2c950d7aba67ecf49dc92af18ee0da92ed96736a711b22e90e795cd",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/pitsGarage.glb",
+    "bytes": 13028,
+    "sha256": "db73d2ebd70763380ef872ffd2a399eb72c979f96c5a3c1ab377d93670204a23",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/pitsOffice.glb",
+    "bytes": 8184,
+    "sha256": "32a39cf3b1051d651f6cc28e2febf3d2752c7120206e5688c0a45b93b7eea625",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/pitsOfficeRoof.glb",
+    "bytes": 11604,
+    "sha256": "144c15e740c8b11eff72f391f2ce543cd02299ffa872d49d0e910f697bb4c1e6",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/roadblock-light.glb",
+    "bytes": 15320,
+    "sha256": "80dd781d6ad1bcb6e07670cc1ce03027031381768aca62b9c7b6e7df99c33650",
+    "source": "City Kit Roads by Kenney",
+    "source_url": "https://kenney.nl/assets/city-kit-roads",
+    "license": "CC0",
+    "changes": "Original circular lens section reused at runtime."
+  },
+  {
+    "file": "assets/models/roadblock.glb",
+    "bytes": 25904,
+    "sha256": "51a0323aedbbb9b2eef7d67d7a55d4a03d271a787b7f7b9b4114fea000450bc0",
+    "source": "Traffic Barrier by Quaternius",
+    "source_url": "https://poly.pizza/m/cM3aJPU9NS",
+    "license": "CC0",
+    "changes": "Original A frame and rail geometry; yellow/black palette; existing rail duplicated at runtime."
+  },
+  {
+    "file": "assets/models/roadStartPositions.glb",
+    "bytes": 5444,
+    "sha256": "6b4493c4c3b80f7dc4fe99245b64bdec788e5e4001f5db003b9eb4491359e3c4",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/roadStraightLong.glb",
+    "bytes": 3652,
+    "sha256": "373339cbec076e9ae2dbb77795826268d2b21bf4bea48b3e58ad8267b5d281e4",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/treeLarge.glb",
+    "bytes": 6964,
+    "sha256": "3fcba4474bc490a5e589ce4924e972ca629029f2ade17a20f4ca3a7f253a3168",
+    "source": "Kenney Racing Kit 2.0",
+    "source_url": "https://kenney.nl/assets/racing-kit",
+    "license": "CC0",
+    "changes": "Extracted unchanged from original embedded HTML; runtime materials and placement adjusted."
+  },
+  {
+    "file": "assets/models/Textures/colormap.png",
+    "bytes": 11428,
+    "sha256": "a48e2962661ae44368ffddf3054f80ed8491d082b757dcc3011184cd9a98b185",
+    "source": "City Kit Roads by Kenney",
+    "source_url": "https://kenney.nl/assets/city-kit-roads",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/aerial_grass_rock-color.jpg",
+    "bytes": 666655,
+    "sha256": "57b8041bfe0d0f01430e4dbaad45e7ddddf0a9fc97317f90dbc51f7b0d9e1b5d",
+    "source": "Poly Haven: aerial_grass_rock",
+    "source_url": "https://polyhaven.com/a/aerial_grass_rock",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/aerial_grass_rock-normal.jpg",
+    "bytes": 904956,
+    "sha256": "1aa3e23bff453f152e089b9f83aa36b4901651e019f7e2ca01d5331a9bbbda78",
+    "source": "Poly Haven: aerial_grass_rock",
+    "source_url": "https://polyhaven.com/a/aerial_grass_rock",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/aerial_grass_rock-roughness.jpg",
+    "bytes": 362214,
+    "sha256": "b9f3f76aba74007f708333c0dbe73c52eb83ea0c4187a13e2e994f888a25114a",
+    "source": "Poly Haven: aerial_grass_rock",
+    "source_url": "https://polyhaven.com/a/aerial_grass_rock",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/asphalt-color.jpg",
+    "bytes": 858925,
+    "sha256": "05c4e79cd99160075969d37bfc6ef72be262153a410bb45510b2c23f7303894c",
+    "source": "Poly Haven: asphalt_track",
+    "source_url": "https://polyhaven.com/a/asphalt_track",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/asphalt-normal.jpg",
+    "bytes": 832851,
+    "sha256": "18caf02427a7cd9cd577ceae5aa9daa7bb3ffba60598e2df8aaf75d1925a8a94",
+    "source": "Poly Haven: asphalt_track",
+    "source_url": "https://polyhaven.com/a/asphalt_track",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/asphalt-roughness.jpg",
+    "bytes": 459197,
+    "sha256": "0646d0cfbe6bf9ea4a8a9e43aec826e7ec32a10b8aff61bf5a4ec02b1bc3c363",
+    "source": "Poly Haven: asphalt_track",
+    "source_url": "https://polyhaven.com/a/asphalt_track",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/autumn-field.hdr",
+    "bytes": 1092974,
+    "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0",
+    "source": "Poly Haven: autumn_field_puresky",
+    "source_url": "https://polyhaven.com/a/autumn_field_puresky",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/concrete_wall_001-color.jpg",
+    "bytes": 79320,
+    "sha256": "c3c936da86d57997d9fc4022371c3798c8d438aeecb8f41546104da6d3947c02",
+    "source": "Poly Haven: concrete_wall_001",
+    "source_url": "https://polyhaven.com/a/concrete_wall_001",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/concrete_wall_001-normal.jpg",
+    "bytes": 179270,
+    "sha256": "6f10711d123c8dff26375555196eae9e16d874c137acdacd44d1ba90168b6d46",
+    "source": "Poly Haven: concrete_wall_001",
+    "source_url": "https://polyhaven.com/a/concrete_wall_001",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/concrete_wall_001-roughness.jpg",
+    "bytes": 156479,
+    "sha256": "d0964c690a8de99fb4f6657e0d3474eea9f9f293d080f4e5c871a55857d9448b",
+    "source": "Poly Haven: concrete_wall_001",
+    "source_url": "https://polyhaven.com/a/concrete_wall_001",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/metal-normal.jpg",
+    "bytes": 484158,
+    "sha256": "f3372e2f60517df2d0e02c1472eb24071d95182d771c30b7ecd8e1b5142768bb",
+    "source": "Poly Haven: rusty_painted_metal",
+    "source_url": "https://polyhaven.com/a/rusty_painted_metal",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "assets/textures/metal-roughness.jpg",
+    "bytes": 318766,
+    "sha256": "2d1c355c793c5886ef9dcecfc06da354e30218a84a9fe28de37741d2f2ed5aaa",
+    "source": "Poly Haven: rusty_painted_metal",
+    "source_url": "https://polyhaven.com/a/rusty_painted_metal",
+    "license": "CC0",
+    "changes": ""
+  },
+  {
+    "file": "vendor/BufferGeometryUtils.js",
+    "bytes": 31906,
+    "sha256": "9be041e96308775d00e2695cc607645b9a9b64fd7c0e759dd8f7c00a8d92becb",
+    "source": "Three.js 0.160.1 official npm package",
+    "source_url": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/utils/BufferGeometryUtils.js",
+    "license": "MIT",
+    "changes": ""
+  },
+  {
+    "file": "vendor/GLTFLoader.js",
+    "bytes": 108515,
+    "sha256": "3d8d4b6b2c7e9b0690fe4b464d4fbb0faca5eda0b1d86391405b9634c1a11355",
+    "source": "Three.js 0.160.1 official npm package",
+    "source_url": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js",
+    "license": "MIT",
+    "changes": "Local BufferGeometryUtils import path adjusted."
+  },
+  {
+    "file": "vendor/RGBELoader.js",
+    "bytes": 11377,
+    "sha256": "f0e87d0008d9484d31358b32befd1bf80e4301f77573cc9a7cf7d871cc3f64b4",
+    "source": "Three.js 0.160.1 official npm package",
+    "source_url": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/RGBELoader.js",
+    "license": "MIT",
+    "changes": ""
+  },
+  {
+    "file": "vendor/three.module.js",
+    "bytes": 1272972,
+    "sha256": "76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495",
+    "source": "Three.js 0.160.1 official npm package",
+    "source_url": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+    "license": "MIT",
+    "changes": ""
+  },
+  {
+    "file": "assets/barlow-condensed-extrabold.ttf",
+    "bytes": 87556,
+    "sha256": "73bc9e17231e9073780d3c81574c7253cecd5645c93544df1a935054b39a364f",
+    "source": "Barlow Condensed ExtraBold, The Barlow Project Authors",
+    "source_url": "https://github.com/jpt/barlow",
+    "license": "SIL OFL 1.1",
+    "changes": ""
   }
 ]
