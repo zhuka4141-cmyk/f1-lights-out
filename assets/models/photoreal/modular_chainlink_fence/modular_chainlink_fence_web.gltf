@@ -1,0 +1,298 @@
+{
+  "asset": {
+    "generator": "glTF-Transform v4.5.1",
+    "version": "2.0"
+  },
+  "accessors": [
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 90,
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 3021,
+      "bufferView": 0,
+      "byteOffset": 180
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 24,
+      "max": [
+        -0.06999826431274414,
+        2.419999837875366,
+        0.021499676629900932
+      ],
+      "min": [
+        -1.9299988746643066,
+        0.07000000029802322,
+        0.0214996337890625
+      ],
+      "bufferView": 1,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 24,
+      "bufferView": 1,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 24,
+      "bufferView": 1,
+      "byteOffset": 24
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1208,
+      "max": [
+        -0.03797042369842529,
+        2.430000066757202,
+        0.024936016649007797
+      ],
+      "min": [
+        -1.952022671699524,
+        0.05999995768070221,
+        -0.023189209401607513
+      ],
+      "bufferView": 2,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1208,
+      "bufferView": 2,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 1208,
+      "bufferView": 2,
+      "byteOffset": 24
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 6224,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 6224,
+      "byteLength": 768,
+      "byteStride": 32,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 6992,
+      "byteLength": 38656,
+      "byteStride": 32,
+      "target": 34962
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 2,
+      "sampler": 0
+    },
+    {
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "source": 5,
+      "sampler": 0
+    }
+  ],
+  "images": [
+    {
+      "name": "modular_chainlink_fence_posts_nor_gl",
+      "mimeType": "image/jpeg",
+      "uri": "textures/modular_chainlink_fence_posts_nor_gl_1k.jpg"
+    },
+    {
+      "name": "modular_chainlink_fence_posts_diff",
+      "mimeType": "image/jpeg",
+      "uri": "textures/modular_chainlink_fence_posts_diff_1k.jpg"
+    },
+    {
+      "name": "modular_chainlink_fence_posts_metal-modular_chainlink_fence_posts_rough",
+      "mimeType": "image/jpeg",
+      "uri": "textures/modular_chainlink_fence_posts_arm_1k.jpg"
+    },
+    {
+      "name": "modular_chainlink_fence_wire_nor_gl",
+      "mimeType": "image/jpeg",
+      "uri": "textures/modular_chainlink_fence_wire_nor_gl_1k.jpg"
+    },
+    {
+      "name": "modular_chainlink_fence_wire_diff-modular_chainlink_fence_wire_opacity",
+      "mimeType": "image/jpeg",
+      "uri": "textures/modular_chainlink_fence_wire_diff_1k.jpg"
+    },
+    {
+      "name": "modular_chainlink_fence_wire_metal-modular_chainlink_fence_wire_rough",
+      "mimeType": "image/jpeg",
+      "uri": "textures/modular_chainlink_fence_wire_arm_1k.jpg"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "modular_chainlink_fence_web.bin",
+      "byteLength": 45648
+    }
+  ],
+  "materials": [
+    {
+      "name": "modular_chainlink_fence_posts",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      },
+      "normalTexture": {
+        "index": 1
+      }
+    },
+    {
+      "name": "modular_chainlink_fence_wire",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3,
+          "extensions": {
+            "KHR_texture_transform": {
+              "offset": [
+                -3.999999999999996,
+                1.00000017484556
+              ],
+              "rotation": 1.5707963705062866,
+              "scale": [
+                4,
+                4
+              ]
+            }
+          }
+        },
+        "metallicRoughnessTexture": {
+          "index": 5,
+          "extensions": {
+            "KHR_texture_transform": {
+              "offset": [
+                -3.999999999999996,
+                1.00000017484556
+              ],
+              "rotation": 1.5707963705062866,
+              "scale": [
+                4,
+                4
+              ]
+            }
+          }
+        }
+      },
+      "normalTexture": {
+        "index": 4,
+        "extensions": {
+          "KHR_texture_transform": {
+            "offset": [
+              -3.999999999999996,
+              1.00000017484556
+            ],
+            "rotation": 1.5707963705062866,
+            "scale": [
+              4,
+              4
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Plane.020",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 2,
+            "NORMAL": 3,
+            "TEXCOORD_0": 4
+          },
+          "mode": 4,
+          "material": 1,
+          "indices": 0
+        },
+        {
+          "attributes": {
+            "POSITION": 5,
+            "NORMAL": 6,
+            "TEXCOORD_0": 7
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 1
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "modular_chainlink_fence_double",
+      "mesh": 0
+    }
+  ],
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0,
+  "extensionsUsed": [
+    "KHR_texture_transform"
+  ],
+  "extensionsRequired": [
+    "KHR_texture_transform"
+  ]
+}

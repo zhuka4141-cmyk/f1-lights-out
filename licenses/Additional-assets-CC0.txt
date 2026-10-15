@@ -28,3 +28,11 @@ CC0 1.0 Universal legal text:
 https://creativecommons.org/publicdomain/zero/1.0/legalcode
 
 These assets were downloaded, not newly modeled. Credits are retained as a courtesy even though CC0 does not require attribution.
+
+Jacaranda Tree by Rico Cilliers / Rob Tuytel, Poly Haven
+https://polyhaven.com/a/jacaranda_tree
+CC0 / Public Domain
+Full original model rendered into a lossless multi-view tree atlas.
+Downloaded geometry simplified for runtime shadows; not newly modeled.
+Concrete barrier and chainlink post meshes optimized for real-time use.
+Red/white paint textures derived from the original concrete photograph.

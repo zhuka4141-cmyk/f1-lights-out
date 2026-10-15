@@ -5,6 +5,7 @@ import { mergeGeometries } from '../vendor/BufferGeometryUtils.js';
 import { RULES } from './core.mjs';
 import { createRoadsideDetails } from './roadside.mjs';
 import { createCollisionEffects } from './collision-fx.mjs';
+import { createVegetation } from './vegetation.mjs';
 
 const assetURL = file => new URL(`../assets/${file}`, import.meta.url).href;
 const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'grass',
@@ -12,14 +13,15 @@ const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'gr
   'fenceStraight', 'barrierRed', 'barrierWhite', 'bannerTowerRed',
   'flagCheckers', 'overhead', 'overheadLights', 'roadblock', 'roadblock-light'];
 
-// Only existing downloaded meshes are used. Copies, placement, UVs and materials
-// change; the model authors' surface shapes and triangle positions are retained.
+// Existing downloaded meshes supply every model. Scanned assets have offline
+// mesh optimization; their photographic PBR textures keep their full resolution.
 export async function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   const mobile = matchMedia('(max-width: 600px)').matches;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 1.75));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.AgXToneMapping; renderer.toneMappingExposure = 1;
   container.appendChild(renderer.domElement);
@@ -83,7 +85,7 @@ export async function createScene(container) {
           material.normalMap = metalNormal; material.normalScale = new THREE.Vector2(.03, .03);
           material.roughnessMap = metalRough;
         } else if (name === 'barrierRed' || name === 'barrierWhite') {
-          material.color.set('#b6b3a7'); material.roughness = .95; material.metalness = 0;
+          material.color.set(name === 'barrierRed' ? '#b72d23' : '#d7d5cc'); material.roughness = .95; material.metalness = 0;
         } else if (material.name === 'grey' || material.name === 'white') {
           material.color.set('#d2d6cf'); material.map = concrete; material.roughnessMap = concreteRough;
           material.normalMap = concreteNormal; material.normalScale = new THREE.Vector2(.2, .2);
@@ -98,11 +100,20 @@ export async function createScene(container) {
     advertMeshes.forEach(mesh => mesh.removeFromParent());
   }));
 
-  const [barrierModel, fenceKit, fenceAlpha, shutterModel] = await Promise.all([
-    loader.loadAsync(assetURL('models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02_1k.gltf')),
-    loader.loadAsync(assetURL('models/photoreal/modular_chainlink_fence/modular_chainlink_fence_1k.gltf')),
+  const [barrierModel, fenceKit, fenceAlpha, shutterModel, treeModel, treeAlpha, redPaint, whitePaint, treeAtlas, treeMeta] = await Promise.all([
+    loader.loadAsync(assetURL('models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02_web.gltf')),
+    loader.loadAsync(assetURL('models/photoreal/modular_chainlink_fence/modular_chainlink_fence_web.gltf')),
     textureLoader.loadAsync(assetURL('models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_alpha_1k.png')),
     loader.loadAsync(assetURL('models/photoreal/rollershutter_door/rollershutter_door_1k.gltf')),
+    loader.loadAsync(assetURL('models/photoreal/jacaranda_tree/jacaranda_tree_shadow.gltf')),
+    textureLoader.loadAsync(assetURL('models/photoreal/jacaranda_tree/textures/jacaranda_tree_leaves_alpha_1k.png')),
+    textureLoader.loadAsync(assetURL('models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_red_1k.jpg')),
+    textureLoader.loadAsync(assetURL('models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_white_1k.jpg')),
+    textureLoader.loadAsync(assetURL('models/photoreal/jacaranda_tree/jacaranda_tree_atlas.webp')),
+    fetch(assetURL('models/photoreal/jacaranda_tree/jacaranda_tree_atlas.json')).then(response => {
+      if (!response.ok) throw Error('Tree atlas metadata could not be loaded');
+      return response.json();
+    }),
   ]);
   // Select the authored straight module, retaining its PBR textures and shape.
   const normalize = object => {
@@ -115,12 +126,12 @@ export async function createScene(container) {
       for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
         material.envMapIntensity = .65;
         for (const value of Object.values(material)) if (value?.isTexture) value.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-        if (material.name.includes('_wire')) {
-          const map = material.map, alpha = fenceAlpha.clone();
+        if (material.name.includes('_wire') || material.name.endsWith('_leaves')) {
+          const map = material.map, alpha = (material.name.includes('_wire') ? fenceAlpha : treeAlpha).clone();
           alpha.wrapS = map.wrapS; alpha.wrapT = map.wrapT; alpha.offset.copy(map.offset);
           alpha.repeat.copy(map.repeat); alpha.rotation = map.rotation; alpha.center.copy(map.center);
           alpha.flipY = map.flipY; alpha.anisotropy = map.anisotropy;
-          material.alphaMap = alpha; material.alphaTest = .4; material.transparent = false;
+          material.alphaMap = alpha; material.alphaTest = material.name.endsWith('_leaves') ? .45 : .4; material.transparent = false;
           material.alphaToCoverage = true; material.depthWrite = true; material.side = THREE.DoubleSide;
           material.needsUpdate = true;
         }
@@ -128,9 +139,23 @@ export async function createScene(container) {
     });
     return group;
   };
-  assets.realBarrier = normalize(barrierModel.scene);
+  const barrierTemplate = normalize(barrierModel.scene);
+  for (const [name, paint] of [['realBarrierRed', redPaint], ['realBarrierWhite', whitePaint]]) {
+    assets[name] = barrierTemplate.clone(true);
+    assets[name].traverse(mesh => {
+      if (!mesh.isMesh) return;
+      mesh.material = mesh.material.clone();
+      const source = mesh.material.map, map = paint.clone();
+      map.colorSpace = source.colorSpace; map.flipY = source.flipY;
+      map.wrapS = source.wrapS; map.wrapT = source.wrapT; map.offset.copy(source.offset);
+      map.repeat.copy(source.repeat); map.rotation = source.rotation; map.center.copy(source.center);
+      map.anisotropy = source.anisotropy; map.needsUpdate = true;
+      mesh.material.map = map; mesh.material.color.set('#ffffff');
+    });
+  }
   assets.realFence = normalize(fenceKit.scene.getObjectByName('modular_chainlink_fence_double'));
   assets.realShutter = normalize(shutterModel.scene.getObjectByName('rollershutter_door'));
+  assets.realTree = normalize(treeModel.scene);
   const shutterSize = new THREE.Box3().setFromObject(assets.realShutter).getSize(new THREE.Vector3());
 
   const statics = new THREE.Group(); scene.add(statics);
@@ -173,7 +198,7 @@ export async function createScene(container) {
   }
   for (let i = 0; i < 330; i++) {
     const z = 18 - i * 4.5;
-    for (const side of [-1, 1]) place('barrierWhite', side * 8.4, .36, z, [18, 1.12 / .1312, .72 / .123], Math.PI / 2)
+    for (const side of [-1, 1]) place(i % 2 ? 'barrierRed' : 'barrierWhite', side * 8.4, .36, z, [18, 1.12 / .1312, .72 / .123], Math.PI / 2)
       .traverse(mesh => { if (mesh.isMesh) mesh.userData.detailKind = 'barrier'; });
   }
   place('bannerTowerRed', -11, .1, -34, 13); place('bannerTowerRed', 11, .1, -34, 13, Math.PI);
@@ -191,7 +216,7 @@ export async function createScene(container) {
     batches.get(key).matrices.push(mesh.matrixWorld.clone());
   });
   scene.remove(statics);
-  const proxyBatches = [];
+  const proxyBatches = [], staticPools = [];
   for (const batch of batches.values()) {
     let geometry = batch.geometry;
     if (!batch.kind && !Array.isArray(batch.material) && ['road', 'grass', 'grey', 'white'].includes(batch.material.name)) {
@@ -201,18 +226,50 @@ export async function createScene(container) {
       geometry.applyMatrix4(first.clone().invert());
     }
     const instance = new THREE.InstancedMesh(geometry, batch.material, batch.matrices.length);
+    instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     batch.matrices.forEach((matrix, i) => instance.setMatrixAt(i, matrix));
     instance.castShadow = batch.shadow; instance.receiveShadow = true;
     instance.computeBoundingSphere(); scene.add(instance);
     if (batch.kind) {
-      instance.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       batch.geometry.computeBoundingBox();
       const center = batch.geometry.boundingBox.getCenter(new THREE.Vector3());
       proxyBatches.push({ mesh:instance, kind:batch.kind, matrices:batch.matrices,
         centers:batch.matrices.map(matrix => center.clone().applyMatrix4(matrix).z) });
+    } else {
+      geometry.computeBoundingSphere();
+      let distant = null;
+      if (batch.shadow) {
+        distant = new THREE.InstancedMesh(geometry,batch.material,batch.matrices.length);
+        distant.instanceMatrix.setUsage(THREE.DynamicDrawUsage); distant.count = 0;
+        distant.receiveShadow = true; distant.castShadow = false; scene.add(distant);
+      }
+      staticPools.push({mesh:instance, distant, matrices:batch.matrices,
+        bounds:batch.matrices.map(matrix => geometry.boundingSphere.clone().applyMatrix4(matrix))});
     }
   }
   const roadside = createRoadsideDetails(scene, assets, proxyBatches, mobile);
+  const vegetation = createVegetation(scene, assets.realTree, treeAtlas, treeMeta);
+  let staticSection = null;
+  function updateStaticVisibility(carZ) {
+    const section = Math.floor(carZ / 11);
+    if (staticSection === section) return;
+    staticSection = section;
+    for (const pool of staticPools) {
+      let count = 0, distantCount = 0;
+      pool.matrices.forEach((matrix,index) => {
+        const {center,radius} = pool.bounds[index];
+        // Keep every object that can appear before the existing fog becomes
+        // opaque, plus offscreen casters behind the camera. No texture/DPR cut.
+        if (center.z + radius <= carZ - 800 || center.z - radius >= carZ + 100) return;
+        if (pool.distant && center.z + radius < carZ - 100) pool.distant.setMatrixAt(distantCount++,matrix);
+        else pool.mesh.setMatrixAt(count++,matrix);
+      });
+      pool.mesh.count = count; pool.mesh.instanceMatrix.needsUpdate = true; pool.mesh.computeBoundingSphere();
+      if (pool.distant) {
+        pool.distant.count = distantCount; pool.distant.instanceMatrix.needsUpdate = true; pool.distant.computeBoundingSphere();
+      }
+    }
+  }
 
   const laneX = (.32745 - .5) * 18, gridNose = (1 - .4228) * 18 + .32;
   // Merge the existing Formula meshes by material, preserving the downloaded
@@ -387,7 +444,10 @@ export async function createScene(container) {
     mesh.material = finishMaterial; mesh.castShadow = false; mesh.receiveShadow = true;
   });
 
-  let lastLights = -1, lastTime = performance.now(), resultBlend = 0;
+  let lastLights = -1, lastTime = performance.now(), resultBlend = 0, dirty = true;
+  let lastDistance = NaN, lastSkid = NaN, lastPhase = '', lastImpactAge = null;
+  let renderedFrames = 0, skippedFrames = 0;
+  const eye = new THREE.Vector3(), target = new THREE.Vector3(), alternateEye = new THREE.Vector3(), alternateTarget = new THREE.Vector3();
   function resize() {
     renderer.setSize(container.clientWidth, container.clientHeight, false);
     camera.aspect = container.clientWidth / container.clientHeight;
@@ -396,31 +456,46 @@ export async function createScene(container) {
       ? Math.max(52, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(21)) / camera.aspect)))
       : 52;
     camera.updateProjectionMatrix();
+    dirty = true;
   }
   resize(); window.addEventListener('resize', resize);
   return {
     diagnostics() { return { calls:renderer.info.render.calls, triangles:renderer.info.render.triangles,
+      renderedFrames, skippedFrames, ...roadside.diagnostics(), ...vegetation.diagnostics(),
       fence:assets.realFence.children.flatMap(group => { const materials = []; group.traverse(mesh => { if (mesh.isMesh) materials.push({ name:mesh.material.name, alpha:!!mesh.material.alphaMap }); }); return materials; }) }; },
-    reset() { car.position.set(laneX, .37, carStartZ); car.rotation.y = Math.PI; resultBlend = 0; collisionFX.reset(); },
+    reset() {
+      car.position.set(laneX, .37, carStartZ); car.rotation.y = Math.PI; resultBlend = 0; collisionFX.reset();
+      dirty = true; lastDistance = NaN; lastSkid = NaN; lastImpactAge = null;
+    },
     setLights(count) {
       if (count === lastLights) return; lastLights = count;
+      dirty = true;
       lights.forEach((surfaces, i) => surfaces.forEach(material => { material.color.set(i < count ? '#ff2b20' : '#160b0c'); material.emissiveIntensity = i < count ? 2.1 : 0; }));
     },
     render(now, drive) {
       const dt = Math.min(.1, Math.max(0, (now - lastTime) / 1000)); lastTime = now;
-      car.position.z = carStartZ - drive.distance;
       const skid = drive.skidded ? 1 - Math.exp(-drive.skidTime * 3) : 0;
+      const changed = drive.distance !== lastDistance || skid !== lastSkid;
+      const collision = drive.result?.type === 'collision';
+      const impactActive = collision && (lastImpactAge === null || lastImpactAge < 8);
+      const orbiting = drive.phase === 'stopped' && !collision && resultBlend < 1;
+      if (document.hidden || (!dirty && !changed && drive.phase === lastPhase && !orbiting && !impactActive)) {
+        skippedFrames++; return;
+      }
+      car.position.z = carStartZ - drive.distance;
       car.position.x = laneX + skid * 2.8; car.rotation.y = Math.PI - skid * 1.15;
       roadside.update(car.position.z);
-      if (drive.result?.type === 'collision') collisionFX.start(now, { x:car.position.x, z:roadblockZ, speed:drive.result.stats.outcomeSpeed });
+      updateStaticVisibility(car.position.z);
+      if (collision) collisionFX.start(now, { x:car.position.x, z:roadblockZ, speed:drive.result.stats.outcomeSpeed });
       const impactAge = collisionFX.update(now);
+      lastImpactAge = impactAge;
       const narrow = container.clientWidth < 600;
       const vibration = !reducedMotion && drive.phase === 'driving' ? Math.sin(now * .048) * .008 * Math.min(drive.speed / 10, 1) : 0;
-      const eye = new THREE.Vector3(laneX, 3.65 + vibration, car.position.z + (narrow ? 11.7 : 10.3));
-      const target = new THREE.Vector3(laneX, 1.35, car.position.z - 22);
+      eye.set(laneX, 3.65 + vibration, car.position.z + (narrow ? 11.7 : 10.3));
+      target.set(laneX, 1.35, car.position.z - 22);
       if (impactAge !== null) {
         const blend = reducedMotion ? 1 : 1 - Math.exp(-impactAge * 3);
-        eye.lerp(new THREE.Vector3(laneX + 5, 6, car.position.z + 14), blend);
+        eye.lerp(alternateEye.set(laneX + 5, 6, car.position.z + 14), blend);
         target.set(laneX, 2.2, roadblockZ - 4);
         if (!reducedMotion) {
           const shake = .14 * Math.exp(-impactAge * 7);
@@ -428,10 +503,11 @@ export async function createScene(container) {
         }
       } else if (drive.phase === 'stopped') {
         resultBlend = reducedMotion ? 1 : Math.min(1, resultBlend + dt / .9);
-        const resultEye = new THREE.Vector3(laneX + 10, 8, car.position.z + 12);
-        eye.lerp(resultEye, resultBlend); target.lerp(new THREE.Vector3(laneX, 1, car.position.z - 4), resultBlend);
+        eye.lerp(alternateEye.set(laneX + 10, 8, car.position.z + 12), resultBlend);
+        target.lerp(alternateTarget.set(laneX, 1, car.position.z - 4), resultBlend);
       }
       camera.position.copy(eye); camera.lookAt(target);
+      vegetation.update(camera);
       // Snap the moving shadow camera to its texel grid instead of allowing
       // subpixel movement to make static buildings and their shadows shimmer.
       shadowFocus.set(laneX, 0, car.position.z - 8);
@@ -440,7 +516,12 @@ export async function createScene(container) {
         shadowFocus.addScaledVector(axis, Math.round(projection / shadowTexel) * shadowTexel - projection);
       }
       sun.target.position.copy(shadowFocus); sun.position.copy(shadowFocus).add(sunOffset);
+      // Camera/UI changes reuse the sharp shadow map. Moving cars and debris
+      // still update it every rendered frame, at the original resolution.
+      renderer.shadowMap.needsUpdate = changed || impactActive;
       renderer.render(scene, camera);
+      renderedFrames++; dirty = false;
+      lastDistance = drive.distance; lastSkid = skid; lastPhase = drive.phase;
     },
   };
 }

@@ -1,0 +1,400 @@
+{
+  "asset": {
+    "generator": "glTF-Transform v4.5.1",
+    "version": "2.0"
+  },
+  "accessors": [
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 6786,
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 4560,
+      "bufferView": 0,
+      "byteOffset": 13572
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 14412,
+      "bufferView": 0,
+      "byteOffset": 22692
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 2385,
+      "max": [
+        10.645769119262695,
+        18.894046783447266,
+        8.854564666748047
+      ],
+      "min": [
+        -11.881113052368164,
+        4.041619777679443,
+        -7.598480224609375
+      ],
+      "bufferView": 1,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 2385,
+      "bufferView": 1,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 2385,
+      "bufferView": 1,
+      "byteOffset": 24
+    },
+    {
+      "type": "VEC4",
+      "componentType": 5121,
+      "count": 2385,
+      "normalized": true,
+      "bufferView": 1,
+      "byteOffset": 32
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 451,
+      "max": [
+        5.329153537750244,
+        10.195470809936523,
+        2.62548828125
+      ],
+      "min": [
+        -3.4659855365753174,
+        -0.1163412556052208,
+        -3.7819664478302
+      ],
+      "bufferView": 2,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 451,
+      "bufferView": 2,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 451,
+      "bufferView": 2,
+      "byteOffset": 24
+    },
+    {
+      "type": "VEC4",
+      "componentType": 5121,
+      "count": 451,
+      "normalized": true,
+      "bufferView": 2,
+      "byteOffset": 32
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 12342,
+      "max": [
+        10.942475318908691,
+        18.372425079345703,
+        8.524979591369629
+      ],
+      "min": [
+        -12.24087905883789,
+        2.46738338470459,
+        -9.34919548034668
+      ],
+      "bufferView": 3,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 12342,
+      "bufferView": 3,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 12342,
+      "bufferView": 3,
+      "byteOffset": 24
+    },
+    {
+      "type": "VEC4",
+      "componentType": 5121,
+      "count": 12342,
+      "normalized": true,
+      "bufferView": 3,
+      "byteOffset": 32
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 51516,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 51516,
+      "byteLength": 85860,
+      "byteStride": 36,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 137376,
+      "byteLength": 16236,
+      "byteStride": 36,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 153612,
+      "byteLength": 444312,
+      "byteStride": 36,
+      "target": 34962
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 2,
+      "sampler": 0
+    },
+    {
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "source": 5,
+      "sampler": 0
+    },
+    {
+      "source": 7,
+      "sampler": 0
+    },
+    {
+      "source": 6,
+      "sampler": 0
+    },
+    {
+      "source": 8,
+      "sampler": 0
+    }
+  ],
+  "images": [
+    {
+      "name": "jacaranda_tree_branches_nor_gl",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_branches_nor_gl_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_branches_diff",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_branches_diff_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_branches_rough",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_branches_arm_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_trunk_nor_gl",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_trunk_nor_gl_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_trunk_diff",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_trunk_diff_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_trunk_rough",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_trunk_arm_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_leaves_nor_gl",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_leaves_nor_gl_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_leaves_diff-jacaranda_tree_leaves_alpha",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_leaves_diff_1k.jpg"
+    },
+    {
+      "name": "jacaranda_tree_leaves_rough",
+      "mimeType": "image/jpeg",
+      "uri": "textures/jacaranda_tree_leaves_arm_1k.jpg"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "jacaranda_tree_far.bin",
+      "byteLength": 597924
+    }
+  ],
+  "materials": [
+    {
+      "name": "jacaranda_tree_branches",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      },
+      "normalTexture": {
+        "index": 1
+      },
+      "extensions": {
+        "KHR_materials_ior": {
+          "ior": 1.4500000476837158
+        },
+        "KHR_materials_specular": {
+          "specularFactor": 0.6000000238418579
+        }
+      }
+    },
+    {
+      "name": "jacaranda_tree_trunk",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 3
+        },
+        "metallicRoughnessTexture": {
+          "index": 5
+        }
+      },
+      "normalTexture": {
+        "index": 4
+      },
+      "extensions": {
+        "KHR_materials_ior": {
+          "ior": 1.4500000476837158
+        },
+        "KHR_materials_specular": {
+          "specularFactor": 0.6000000238418579
+        }
+      }
+    },
+    {
+      "name": "jacaranda_tree_leaves",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 6
+        },
+        "metallicRoughnessTexture": {
+          "index": 8
+        }
+      },
+      "normalTexture": {
+        "index": 7
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "tree.016",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 3,
+            "NORMAL": 4,
+            "TEXCOORD_0": 5,
+            "COLOR_0": 6
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 0
+        },
+        {
+          "attributes": {
+            "POSITION": 7,
+            "NORMAL": 8,
+            "TEXCOORD_0": 9,
+            "COLOR_0": 10
+          },
+          "mode": 4,
+          "material": 1,
+          "indices": 1
+        },
+        {
+          "attributes": {
+            "POSITION": 11,
+            "NORMAL": 12,
+            "TEXCOORD_0": 13,
+            "COLOR_0": 14
+          },
+          "mode": 4,
+          "material": 2,
+          "indices": 2
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "jacaranda_tree_LOD0",
+      "mesh": 0
+    }
+  ],
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0,
+  "extensionsUsed": [
+    "KHR_materials_ior",
+    "KHR_materials_specular"
+  ]
+}

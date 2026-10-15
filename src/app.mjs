@@ -4,7 +4,13 @@ import { renderReport } from './report.mjs';
 import { renderLeaderboard } from './leaderboard.mjs';
 import { COLLISION_REPLAY_MS } from './impact.mjs';
 
-const $ = id => document.getElementById(id);
+const elements = new Map();
+const $ = id => {
+  if (!elements.has(id)) elements.set(id, document.getElementById(id));
+  return elements.get(id);
+};
+const text = (id, value) => { const node = $(id), next = String(value); if (node.textContent !== next) node.textContent = next; };
+const attribute = (id, name, value) => { const node = $(id), next = String(value); if (node.getAttribute(name) !== next) node.setAttribute(name,next); };
 const sequence = new StartSequence(), drive = new DriveChallenge();
 const board = new LocalLeaderboard({ getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) });
 const held = new Set();
@@ -167,28 +173,29 @@ function frame(now) {
     else if (!resultShown && !activeDrive() && sequence.result?.type !== 'valid' && sequence.result) showResult(sequence.result);
     const phase = resultShown ? 'result' : collisionAt !== null ? 'crashing' : drive.phase === 'skidding' ? 'skidding'
       : drive.phase === 'driving' ? drive.braking ? 'braking' : drive.propulsionCut ? 'coasting' : 'driving' : sequence.phase;
-    document.body.dataset.phase = phase;
+    if (document.body.dataset.phase !== phase) document.body.dataset.phase = phase;
     $('throttleButton').classList.toggle('ready', phase === 'go');
     if (activeDrive()) {
       const distanceToLine = RULES.distance - drive.distance;
-      $('liveLabel').textContent = distanceToLine < 0 ? '越过终点线' : '距终点线';
-      $('liveTime').textContent = Math.abs(distanceToLine).toFixed(2);
+      text('liveLabel', distanceToLine < 0 ? '越过终点线' : '距终点线');
+      text('liveTime', Math.abs(distanceToLine).toFixed(2));
       $('throttleButton').disabled = drive.skidded;
       $('throttleButton').classList.toggle('down', drive.braking);
-      $('throttleButton').setAttribute('aria-pressed', String(drive.braking));
-      $('pedalHint').textContent = drive.skidded ? '轮胎锁死' : drive.propulsionCut ? '按住刹车 · 松开仅滑行' : '按住刹车 · 首次即断动力';
+      attribute('throttleButton', 'aria-pressed', drive.braking);
+      text('pedalHint', drive.skidded ? '轮胎锁死' : drive.propulsionCut ? '按住刹车 · 松开仅滑行' : '按住刹车 · 首次即断动力');
     }
     const pressure = Math.max(0, drive.brakePressure * 100);
-    $('pressureValue').textContent = `${pressure.toFixed(0)}%`;
-    $('pressureFill').style.height = `${Math.min(100, pressure / 115 * 100)}%`;
-    $('brakeGauge').setAttribute('aria-valuenow', pressure.toFixed(1));
+    text('pressureValue', `${pressure.toFixed(0)}%`);
+    const fillHeight = `${Math.min(100, pressure / 115 * 100)}%`;
+    if ($('pressureFill').style.height !== fillHeight) $('pressureFill').style.height = fillHeight;
+    attribute('brakeGauge', 'aria-valuenow', pressure.toFixed(1));
     $('brakeGauge').classList.toggle('danger', pressure >= 100);
-    $('pressureHint').textContent = pressure >= 100 ? '接近 115%！松开卸压' : '可分段刹车';
+    text('pressureHint', pressure >= 100 ? '接近 115%！松开卸压' : '可分段刹车');
     const speed = Math.round(drive.speed * 3.6), driving = drive.phase === 'driving';
-    $('speed').textContent = String(speed).padStart(3, '0'); $('gear').textContent = speed < 1 ? 'N' : String(Math.min(8, 1 + Math.floor(speed / 40)));
+    text('speed', String(speed).padStart(3, '0')); text('gear', speed < 1 ? 'N' : Math.min(8, 1 + Math.floor(speed / 40)));
     const input = driving ? drive.braking ? Math.round(pressure) : drive.propulsionCut ? 0 : 100 : 0;
-    $('inputValue').firstChild.textContent = input;
-    $('inputLabel').textContent = driving && drive.braking ? 'BRAKE' : drive.propulsionCut ? 'POWER OFF' : 'THROTTLE';
+    if ($('inputValue').firstChild.textContent !== String(input)) $('inputValue').firstChild.textContent = input;
+    text('inputLabel', driving && drive.braking ? 'BRAKE' : drive.propulsionCut ? 'POWER OFF' : 'THROTTLE');
     const bars = driving ? drive.braking ? Math.ceil(pressure / 115 * 12) : Math.min(12, 3 + speed / 30) : ['sequence', 'waiting'].includes(phase) ? 3 : 0;
     rpm.forEach((element, i) => element.classList.toggle('active', i < bars));
     world.render(now, drive);

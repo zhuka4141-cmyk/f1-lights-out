@@ -57,12 +57,13 @@ node preview.cjs
 
 ## 模型、实拍纹理与光照
 
-没有创建新的车、路障、赛道或灯具模型。保留原下载模型的网格形状，使用复制、摆放、材质调整和现成部件组合。
+没有创建新的车、路障、赛道或灯具模型。使用下载的现成模型，进行复制摆放、材质调整、现成部件组合及网页网格优化；没有重新建模。
 
 - 赛车：**F1 2022**，Blender458，CC BY 4.0；沿用原项目由 FetchCFD / [RM-RAIN-MASTER](https://github.com/Pilot123321/RM-RAIN-MASTER#credits) 获取的模型。合并绘制，调整车漆、金属、轮胎材质，保留原网格形状。
 - 赛道、看台、远景护栏和发车灯：[Kenney Racing Kit](https://kenney.nl/assets/racing-kit)，CC0，沿用原项目。
-- 近景混凝土护栏：[Concrete Road Barrier 02](https://polyhaven.com/a/concrete_road_barrier_02)，Poly Haven，CC0。使用原 glTF 和实拍 PBR 贴图，保留破损边缘、坑洞和表面磨损；近景使用原网格，远景保留与之尺寸一致的轻量代理。
-- 铁丝网：[Modular Chainlink Fence](https://polyhaven.com/a/modular_chainlink_fence)，Poly Haven，CC0。选取现成的直线模块，配合官方透明遮罩、法线、金属和粗糙度贴图；透明裁剪和 alpha to coverage 避免网片排序闪烁。
+- 近景混凝土护栏：[Concrete Road Barrier 02](https://polyhaven.com/a/concrete_road_barrier_02)，Poly Haven，CC0。扫描网格从每段 23,822 个三角面优化至 3,622 个；保留原尺寸实拍法线与粗糙度，使用从混凝土照片生成的红白油漆涂装，保留坑洞与磨损。沿赛道红白交替，远景代理同步颜色与尺寸。原始资源保留供修改使用，页面只加载 _web 版本。
+- 铁丝网：[Modular Chainlink Fence](https://polyhaven.com/a/modular_chainlink_fence)，Poly Haven，CC0。选取现成直线模块，立杆由 3,024 个三角面优化至 1,007 个，网片全部 30 个原三角面保留。官方透明遮罩、法线、金属和粗糙度贴图保持原尺寸；透明裁剪和 alpha to coverage 减少网片排序闪烁。
+- 建筑后方树木：[Jacaranda Tree](https://polyhaven.com/a/jacaranda_tree)，Poly Haven，Rico Cilliers / Rob Tuytel，CC0。完整原模型离线渲染为多角度无损 WebP 树冠图集，运行时按视角显示；附近使用同一模型优化后的网格投射实时阴影。树冠采用预渲染光照，适用于固定太阳和赛道相机，近距离自由观察仍有视角限制。
 - 维修区卷帘门：[Rollershutter Door](https://polyhaven.com/a/rollershutter_door)，Poly Haven，CC0。使用无涂鸦版本的现成网格及金属、污渍、凹凸纹理，装配在原有车库正面。
 - 终点标线：参考 [Getty Images 的真实赛道终点线照片](https://www.gettyimages.hk/%E5%9C%96%E7%89%87/race-track-finish-line) 中的横向黑白棋盘格路面标线；使用现成 Kenney 赛道路面网格的薄层副本调整材质与 UV，叠加沥青法线和粗糙度。
 - 黄黑路障：[Traffic Barrier](https://poly.pizza/m/cM3aJPU9NS)，**Quaternius**，CC0。保留 A 字架和斜纹网格，改为黄黑配色，复制原有横板部件组成双横板，整排摆放在终点线后 10 米处。
@@ -75,9 +76,11 @@ node preview.cjs
 - Three.js **0.160.1** 及其 GLTFLoader、RGBELoader、BufferGeometryUtils，MIT，来自官方 npm 包。
 - Barlow Condensed ExtraBold 字体，SIL OFL 1.1，沿用原项目。
 
-使用 PBR 材质、HDR 环境反射、暖色斜射太阳与冷色天空补光、柔和阴影和 AgX 色调映射，保留亮部细节。桌面使用 2048 像素 PCF 阴影，手机使用 1024 像素 PCF 阴影；移动阴影相机对齐阴影纹素以减少闪烁。围栏和灯杆使用金属材质，墙体使用混凝土，避免混用；移除比例突兀的锥形树木。原有赛道和看台的几何轮廓仍带有低多边形风格。
+使用 PBR 材质、HDR 环境反射、暖色斜射太阳与冷色天空补光、柔和阴影和 AgX 色调映射，保留亮部细节。桌面使用 2048 像素 PCF 阴影，手机使用 1024 像素 PCF 阴影；移动阴影相机对齐阴影纹素以减少闪烁。围栏和灯杆使用金属材质，墙体使用混凝土，避免混用；建筑后恢复基于真实树木模型的树冠与投影。原有赛道和看台的几何轮廓仍带有低多边形风格。
 
-写实护栏和铁丝网使用实例化的移动细节池，仅在车辆附近显示原始高细节网格；远处恢复轻量代理。手机的细节范围、阴影贴图和像素比更低。所有素材均在本地 assets 内，页面不依赖素材站在线加载。
+写实护栏和铁丝网使用实例化移动细节池；仅车辆附近提交优化后的详细网格，远处恢复轻量代理。静态实例按距离筛除雾后和车后的不可见物体；远处相同模型仍正常显示，但不重复进入近景阴影绘制。静止首页和结算镜头结束后复用已渲染画面；灯光变化、移动、碰撞及窗口调整会重新绘制。仪表数值只在变化时写入 DOM，减少布局和垃圾回收负担。
+
+本轮优化保留原有像素比上限、贴图尺寸和阴影分辨率：桌面 DPR 上限 1.75 / 2048 阴影，手机 DPR 上限 1.5 / 1024 阴影。手机保留原来的较短细节范围。所有素材均在本地 assets 内，页面不依赖素材站在线加载。
 
 右侧维修建筑移除 TANKCO 广告面，并取消与自带办公室的屋顶模型重复叠放的办公室层，修复共面表面在移动时闪烁的问题。
 
@@ -91,6 +94,7 @@ styles.css             桌面、手机界面与压力仪表
 src/core.mjs           发车、车辆物理、遥测及本地排行榜
 src/scene.mjs          现成模型、材质、赛道、相机及光照
 src/roadside.mjs       写实护栏、铁丝网与远景代理调度
+src/vegetation.mjs     真实树冠图集、视角选择与近景投影
 src/collision-fx.mjs   原路障部件碎片、火焰、烟尘与火花
 src/impact.mjs         与赛果分离的碎片轨迹计算
 src/report.mjs         结算统计与 SVG 曲线

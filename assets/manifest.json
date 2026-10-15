@@ -339,7 +339,7 @@
     "source": "Poly Haven · concrete_road_barrier_02",
     "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
   },
   {
     "file": "assets/models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02.bin",
@@ -348,7 +348,7 @@
     "source": "Poly Haven · concrete_road_barrier_02",
     "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
   },
   {
     "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_arm_1k.jpg",
@@ -357,7 +357,7 @@
     "source": "Poly Haven · concrete_road_barrier_02",
     "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
   },
   {
     "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_nor_gl_1k.jpg",
@@ -366,7 +366,7 @@
     "source": "Poly Haven · concrete_road_barrier_02",
     "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
   },
   {
     "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_diff_1k.jpg",
@@ -375,7 +375,7 @@
     "source": "Poly Haven · concrete_road_barrier_02",
     "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/modular_chainlink_fence_1k.gltf",
@@ -384,7 +384,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/modular_chainlink_fence.bin",
@@ -393,7 +393,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_posts_nor_gl_1k.jpg",
@@ -402,7 +402,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_arm_1k.jpg",
@@ -411,7 +411,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_nor_gl_1k.jpg",
@@ -420,7 +420,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_diff_1k.jpg",
@@ -429,7 +429,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_posts_arm_1k.jpg",
@@ -438,7 +438,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_posts_diff_1k.jpg",
@@ -447,7 +447,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/modular_chainlink_fence/textures/modular_chainlink_fence_wire_alpha_1k.png",
@@ -456,7 +456,7 @@
     "source": "Poly Haven · modular_chainlink_fence",
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
     "file": "assets/models/photoreal/rollershutter_door/rollershutter_door_1k.gltf",
@@ -465,7 +465,7 @@
     "source": "Poly Haven · rollershutter_door",
     "source_url": "https://polyhaven.com/a/rollershutter_door",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Original downloaded mesh and full-resolution photographic PBR textures; runtime placement and materials adjusted."
   },
   {
     "file": "assets/models/photoreal/rollershutter_door/rollershutter_door.bin",
@@ -474,7 +474,7 @@
     "source": "Poly Haven · rollershutter_door",
     "source_url": "https://polyhaven.com/a/rollershutter_door",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Original downloaded mesh and full-resolution photographic PBR textures; runtime placement and materials adjusted."
   },
   {
     "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_arm_1k.jpg",
@@ -483,7 +483,7 @@
     "source": "Poly Haven · rollershutter_door",
     "source_url": "https://polyhaven.com/a/rollershutter_door",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Original downloaded mesh and full-resolution photographic PBR textures; runtime placement and materials adjusted."
   },
   {
     "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_diff_1k.jpg",
@@ -492,7 +492,7 @@
     "source": "Poly Haven · rollershutter_door",
     "source_url": "https://polyhaven.com/a/rollershutter_door",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Original downloaded mesh and full-resolution photographic PBR textures; runtime placement and materials adjusted."
   },
   {
     "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_nor_gl_1k.jpg",
@@ -501,7 +501,7 @@
     "source": "Poly Haven · rollershutter_door",
     "source_url": "https://polyhaven.com/a/rollershutter_door",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Original downloaded mesh and full-resolution photographic PBR textures; runtime placement and materials adjusted."
   },
   {
     "file": "assets/models/photoreal/rollershutter_door/textures/rollershutter_door_graffiti_diff_1k.jpg",
@@ -510,6 +510,231 @@
     "source": "Poly Haven · rollershutter_door",
     "source_url": "https://polyhaven.com/a/rollershutter_door",
     "license": "CC0",
-    "changes": "Original 1K glTF, geometry and PBR textures; only runtime placement, scale and lighting adjusted."
+    "changes": "Original downloaded mesh and full-resolution photographic PBR textures; runtime placement and materials adjusted."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02_web.bin",
+    "bytes": 89156,
+    "sha256": "3c38bb24f21d2f5f082f5f626cb4f747c8047e2b6db25ef885bf5e28b2390877",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/concrete_road_barrier_02_web.gltf",
+    "bytes": 2859,
+    "sha256": "4b75618af29cdd201000bacd4c4a675a516a00d9adc33f246e62b7fd0cb5ff60",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_red_1k.jpg",
+    "bytes": 393942,
+    "sha256": "bbe27d7b7c51fb714f79df26ca1b2d342f6a241fc9c0b5cd223320e8560702aa",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
+  },
+  {
+    "file": "assets/models/photoreal/concrete_road_barrier_02/textures/concrete_road_barrier_02_white_1k.jpg",
+    "bytes": 388331,
+    "sha256": "5a1be89600f98572fbfe41210fd6e5afb6b33203b877802c2e01a729c370c902",
+    "source": "Poly Haven · concrete_road_barrier_02",
+    "source_url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "changes": "Downloaded scanned mesh optimized from 23822 to 3622 triangles in the _web version. Full-resolution normal/ARM retained; red/white paint variants derived from the original photographic diffuse. Original mesh retained as source."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree.bin",
+    "bytes": 5158560,
+    "sha256": "78af650d5d430d4ce123d4930d822f175c9199ba85a814b0459439971d01978d",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_atlas.json",
+    "bytes": 241,
+    "sha256": "2e76d1ffb17bd5097a8acf09fcb54561eccb56a4458898f41d3b4982ea563b04",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_atlas.webp",
+    "bytes": 2541422,
+    "sha256": "0c76b9d0c619150b1189af93ff78c848be3383e824e0dff5c42382faba43f942",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_far.bin",
+    "bytes": 597924,
+    "sha256": "9ac66896d7c02ebd6ba743523f1f1d346b25cc343ad0f5cddafcc73fd18b8c69",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_far.gltf",
+    "bytes": 7916,
+    "sha256": "47b4ae286a5172e8d039f8bac209660addfd0bfe26d27dadbc84a513dc37e98a",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_shadow.bin",
+    "bytes": 1825304,
+    "sha256": "45bba7066908574a50c7da14050ba516cc57853bf599fb618e72d684531a5bf1",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_shadow.gltf",
+    "bytes": 5118,
+    "sha256": "98cf5cc5f24dbeba4156b971c14379635f456561b1d76b872b44dce0150e86c2",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_web.bin",
+    "bytes": 1898456,
+    "sha256": "a9fad423ca56d8db129d36b0c4c6f9b5af8e478745df70df6f3fd63015742dca",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/jacaranda_tree_web.gltf",
+    "bytes": 7936,
+    "sha256": "196de361a2065063746180d6a8ce5670e5a774b95fb2de701f0b6e6f05ebb8fd",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_branches_arm_1k.jpg",
+    "bytes": 484806,
+    "sha256": "9e3f82263247ce4f619692cea4c4f6fe9936ff465a86623481849062642c7d05",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_branches_diff_1k.jpg",
+    "bytes": 531544,
+    "sha256": "5a4fe735f0c346cec83b6b444a0169fc14d2b31bbb7b26e26b1b6c726b6e06f6",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_branches_nor_gl_1k.jpg",
+    "bytes": 819101,
+    "sha256": "2d67393ba76a0f49cf965fa0c99d8c16268e71e87b1203d35539bfdb971a514e",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_leaves_alpha_1k.png",
+    "bytes": 506043,
+    "sha256": "c708a7e928a2e4d26981b021a22deeefc0ebb0e467f60b53cfa636a7e24d68f7",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_leaves_arm_1k.jpg",
+    "bytes": 332762,
+    "sha256": "577eab0a07279fb4afd24522e85e0f188058c88db4b35eb0b330005b0d745b7a",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_leaves_diff_1k.jpg",
+    "bytes": 533896,
+    "sha256": "6fe80c1f514ef690cccefb90b7e559fbd1aa9c8935fdc02523cc8ab83c22f7c2",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_leaves_nor_gl_1k.jpg",
+    "bytes": 700843,
+    "sha256": "61520be2529ffe8e3d93d4361892134833bb4657117e121749089769067914c1",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_trunk_arm_1k.jpg",
+    "bytes": 895975,
+    "sha256": "4a12e238cf3b8ba860626e99bf128e56ab41642fa4c2502a77df41a338689b78",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_trunk_diff_1k.jpg",
+    "bytes": 896938,
+    "sha256": "e5582fba664a9255252d1ee8088f75ad557f07360aa7f4513f2b2f1577e90be9",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/jacaranda_tree/textures/jacaranda_tree_trunk_nor_gl_1k.jpg",
+    "bytes": 1096100,
+    "sha256": "b2ad4e5daf8ec3fb87ba6c5f38e6a6924c9a6adebec20389f503e42da5d04587",
+    "source": "Poly Haven · jacaranda_tree",
+    "source_url": "https://polyhaven.com/a/jacaranda_tree",
+    "license": "CC0",
+    "changes": "Downloaded model. Complete original tree rendered offline into a lossless multi-view atlas; optimized authored mesh retained for nearby dynamic shadows. Additional mesh variants retained as source assets."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/modular_chainlink_fence_web.bin",
+    "bytes": 45648,
+    "sha256": "f3e0550b0590969114c39c7aaff426cf0d2a1bfb5000b1a4b0852143bbbeba14",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
+  },
+  {
+    "file": "assets/models/photoreal/modular_chainlink_fence/modular_chainlink_fence_web.gltf",
+    "bytes": 6080,
+    "sha256": "cde1a2b72c3cb7c3bbffb87cb75d1d7d13138e206ac060aac7501a48dc5b8cea",
+    "source": "Poly Haven · modular_chainlink_fence",
+    "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
+    "license": "CC0",
+    "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   }
 ]
