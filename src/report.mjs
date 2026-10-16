@@ -79,7 +79,7 @@ export function renderReport(result) {
     cancelled: ['本轮已取消。', '比赛中离开页面会取消本轮成绩。', '已取消'],
     skid: ['刹车锁死，打滑。', '压力达到 115%，轮胎锁死。本轮无效；下次松开卸压，再分段刹车。', '打滑失败'],
     'short-stop': ['还没冲过终点线。', '必须先用油门冲过 1250 米终点线，再在路障前刹停。本轮不计分。', '未完成赛段'],
-    'engine-blown': ['引擎爆炸。', '油门未松，速度超过 250 km/h，引擎爆缸。本轮失败。', '引擎失败'],
+    'engine-blown': ['引擎爆炸。', '速度超过 250 km/h，引擎爆缸。本轮失败，车辆失去动力后继续惯性滑行。', '引擎失败'],
     collision: ['撞上路障。', `车辆撞上终点线后 ${RULES.roadblockGap} 米处的黄黑路障，本轮无效。${result.stats?.outcomeSpeed != null ? `碰撞速度 ${result.stats.outcomeSpeed.toFixed(1)} km/h。` : ''}`, '碰撞失败'],
   };
   const failure = failures[result.type] || failures.cancelled;
@@ -89,7 +89,7 @@ export function renderReport(result) {
     ? `已冲过终点线，并在终点线后 ${RULES.roadblockGap} 米的路障前停稳。距离路障越近，得分越高。` : failure[1];
   element('resultBadge').textContent = valid ? '有效刹停' : failure[2];
   const hasOffset = Number.isFinite(result.offsetCm);
-  element('offsetLabel').textContent = hasOffset ? '车头距路障' : '本轮结果';
+  element('offsetLabel').textContent = hasOffset ? result.type === 'engine-blown' ? '爆缸时距路障' : '车头距路障' : '本轮结果';
   element('resultTime').textContent = hasOffset ? (result.distanceCm / 100).toFixed(2) : failure[2];
   element('resultTime').style.fontSize = hasOffset ? '' : '28px';
   element('resultUnit').textContent = hasOffset ? 'm' : '';
