@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#101719">
-  <meta name="description" content="手动油门冲过 1250 米终点线，超过 250 km/h 引擎爆炸。冲线后滑行与刹车，在 500 米外的路障前精准停稳。">
+  <meta name="description" content="手动油门冲过 1250 米终点线，超过 250 km/h 引擎爆炸。冲线后滑行与刹车，在 250 米外的路障前精准停稳。">
   <title>LIGHTS OUT · 1250 米极限刹停</title>
   <link rel="stylesheet" href="styles.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
@@ -13,15 +13,16 @@
 <body data-phase="idle">
   <main id="game" aria-label="F1 起步刹停挑战">
     <div id="world" aria-hidden="true"></div><div class="scene-shade" aria-hidden="true"></div>
+    <div id="launchFlash" aria-hidden="true"></div>
     <header class="header">
       <button class="board-button" id="leaderboardButton" aria-haspopup="dialog">排行榜 <span aria-hidden="true">↗</span></button>
     </header>
     <p class="sr-only" id="resultAnnouncement" role="status" aria-live="polite" aria-atomic="true"></p>
     <section class="intro panel" id="introPanel">
       <h1 class="intro-title">赛车刹停游戏</h1>
-      <p class="intro-meta">1250 m 终点 · 1750 m 路障 · 250 km/h</p>
+      <p class="intro-meta">1250 m 终点 · 1500 m 路障 · 250 km/h</p>
       <button class="primary-button" id="startButton" disabled><span id="startLabel">准备中…</span></button>
-      <p class="start-note">左刹车 · 右油门，可同时踩；超过 250 爆缸<br>冲过终点线，再贴近 500 米外路障停稳</p>
+      <p class="start-note">左刹车 · 右油门，可同时踩；超过 250 爆缸<br>冲过终点线，再贴近 250 米外路障停稳</p>
     </section>
     <section class="live-reaction" id="liveReaction" hidden aria-label="行驶数据"><span id="liveLabel">距终点线</span><div><strong id="liveTime">1250.00</strong><small>m</small></div><p id="liveSecondary"></p></section>
     <section class="telemetry" aria-label="赛车仪表"><div class="rpm-strip" id="rpmStrip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="dash-data"><div class="gear"><strong id="gear">N</strong><span id="gearAction">GEAR</span></div><div class="speed"><strong id="speed">000</strong><span>km/h</span></div><div class="input-data"><strong id="inputValue">0.0<small>K</small></strong><span id="inputLabel">RPM</span></div></div></section>
@@ -58,19 +59,19 @@
       <div class="leaderboard-grid" id="boardTable" hidden>
         <section class="ranking-board" aria-labelledby="distanceRankTitle">
           <h3 id="distanceRankTitle">距路障</h3>
-          <table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">距离</th></tr></thead><tbody id="distanceRankRows"></tbody></table>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="distanceRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">距离</th></tr></thead><tbody id="distanceRankRows"></tbody></table></div>
         </section>
         <section class="ranking-board" aria-labelledby="reactionRankTitle">
           <h3 id="reactionRankTitle">起步反应</h3>
-          <table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">反应</th></tr></thead><tbody id="reactionRankRows"></tbody></table>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="reactionRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">反应</th></tr></thead><tbody id="reactionRankRows"></tbody></table></div>
         </section>
         <section class="ranking-board" aria-labelledby="completionRankTitle">
           <h3 id="completionRankTitle">冲线时间</h3>
-          <table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">时间</th></tr></thead><tbody id="completionRankRows"></tbody></table>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="completionRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">时间</th></tr></thead><tbody id="completionRankRows"></tbody></table></div>
         </section>
         <section class="ranking-board" aria-labelledby="scoreRankTitle">
           <h3 id="scoreRankTitle">综合得分</h3>
-          <table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">得分</th></tr></thead><tbody id="scoreRankRows"></tbody></table>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="scoreRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">得分</th></tr></thead><tbody id="scoreRankRows"></tbody></table></div>
         </section>
       </div>
     </dialog>

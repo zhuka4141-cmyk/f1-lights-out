@@ -6,6 +6,7 @@ import { RULES } from './core.mjs';
 import { createRoadsideDetails } from './roadside.mjs';
 import { createCollisionEffects } from './collision-fx.mjs';
 import { createVegetation } from './vegetation.mjs';
+import { createFinishSparks } from './finish-fx.mjs';
 
 const assetURL = file => new URL(`../assets/${file}`, import.meta.url).href;
 const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'grass',
@@ -413,7 +414,7 @@ export async function createScene(container) {
 
   // Paint the finish band on a thin copy of the downloaded Kenney road surface.
   // Broad painted squares remain visible at speed and use the existing road mesh.
-  const finishWidth = 4.5, rows = 6, columns = 24;
+  const finishWidth = 9, rows = 6, columns = 12;
   const finishPaint = document.createElement('canvas'); finishPaint.width = 2048; finishPaint.height = 512;
   const paint = finishPaint.getContext('2d');
   for (let row = 0; row < rows; row++) {
@@ -446,6 +447,34 @@ export async function createScene(container) {
     mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     mesh.material = finishMaterial; mesh.castShadow = false; mesh.receiveShadow = true;
   });
+  // Reuse the downloaded starting gantry for a full-width finish arch.
+  const finishGantry = place('overhead', 0, .2, finishZ - .3, [18, 15, 18], 0, scene);
+  finishGantry.traverse(mesh => {
+    if (!mesh.isMesh) return;
+    mesh.material = new THREE.MeshStandardMaterial({ color: '#eeeeea', roughness: .65, metalness: .25 });
+    mesh.castShadow = true; mesh.receiveShadow = true;
+  });
+  const bannerCanvas = document.createElement('canvas'); bannerCanvas.width = 2048; bannerCanvas.height = 256;
+  const banner = bannerCanvas.getContext('2d'); banner.fillStyle = '#111111'; banner.fillRect(0, 0, 2048, 256);
+  for (const edge of [0, 1856]) for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) {
+    banner.fillStyle = (r + c) % 2 ? '#111111' : '#ffffff'; banner.fillRect(edge + c * 64, r * 64, 64, 64);
+  }
+  banner.fillStyle = '#ffffff'; banner.font = 'bold 160px Arial'; banner.textAlign = 'center'; banner.textBaseline = 'middle'; banner.fillText('FINISH', 1024, 139);
+  const bannerTexture = new THREE.CanvasTexture(bannerCanvas); bannerTexture.colorSpace = THREE.SRGBColorSpace;
+  const bannerMaterial = new THREE.MeshStandardMaterial({ map: bannerTexture, roughness: .8 });
+  const finishBanner = place('barrierWhite', 0, 7.03, finishZ + .85, [45, 13.4, 2], 0, scene);
+  finishBanner.updateMatrixWorld(true);
+  finishBanner.traverse(mesh => {
+    if (!mesh.isMesh) return;
+    mesh.geometry = mesh.geometry.clone(); const p = mesh.geometry.attributes.position, uv = new Float32Array(p.count * 2), point = new THREE.Vector3();
+    for (let i = 0; i < p.count; i++) {
+      point.fromBufferAttribute(p, i).applyMatrix4(mesh.matrixWorld);
+      uv[i * 2] = (point.x + 6.75) / 13.5; uv[i * 2 + 1] = (point.y - 6.85) / 1.68;
+    }
+    mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); mesh.material = bannerMaterial; mesh.castShadow = true;
+  });
+  const finishSparks = createFinishSparks(scene, finishZ, mobile, reducedMotion);
+  let finishCelebrated = false;
 
   let lastLights = -1, lastTime = performance.now(), resultBlend = 0, dirty = true;
   let lastDistance = NaN, lastSkid = NaN, lastPhase = '', lastImpactAge = null;
@@ -468,6 +497,7 @@ export async function createScene(container) {
       fence:assets.realFence.children.flatMap(group => { const materials = []; group.traverse(mesh => { if (mesh.isMesh) materials.push({ name:mesh.material.name, alpha:!!mesh.material.alphaMap }); }); return materials; }) }; },
     reset() {
       car.position.set(laneX, .37, carStartZ); car.rotation.y = Math.PI; resultBlend = 0; collisionFX.reset();
+      finishSparks.reset(); finishCelebrated = false;
       dirty = true; lastDistance = NaN; lastSkid = NaN; lastImpactAge = null;
     },
     setLights(count) {
@@ -482,8 +512,13 @@ export async function createScene(container) {
       const engineBlown = drive.result?.type === 'engine-blown';
       const collision = drive.result?.type === 'collision' || engineBlown;
       const impactActive = collision && (lastImpactAge === null || lastImpactAge < 8);
+      if (drive.finishCrossed && !finishCelebrated) {
+        finishCelebrated = true;
+        if (drive.elapsed - drive.finishAt < 2.9) finishSparks.start(now - Math.max(0, drive.elapsed - drive.finishAt) * 1000);
+      }
+      const finishActive = finishSparks.active;
       const orbiting = drive.phase === 'stopped' && !collision && resultBlend < 1;
-      if (document.hidden || (!dirty && !changed && drive.phase === lastPhase && !orbiting && !impactActive)) {
+      if (document.hidden || (!dirty && !changed && drive.phase === lastPhase && !orbiting && !impactActive && !finishActive)) {
         skippedFrames++; return;
       }
       car.position.z = carStartZ - drive.distance;
@@ -494,6 +529,7 @@ export async function createScene(container) {
       if (collision) collisionFX.start(now, { x:car.position.x, z:impactZ, speed:drive.result.stats.outcomeSpeed, engine:engineBlown });
       const impactAge = collisionFX.update(now);
       lastImpactAge = impactAge;
+      finishSparks.update(now);
       const narrow = container.clientWidth < 600;
       const vibration = !reducedMotion && drive.phase === 'driving' ? Math.sin(now * .048) * .008 * Math.min(drive.speed / 10, 1) : 0;
       eye.set(laneX, 3.65 + vibration, car.position.z + (narrow ? 11.7 : 10.3));

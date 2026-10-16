@@ -1,7 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { DriveChallenge, isScoringResult, overallScore } from '../src/core.mjs';
 
-export const BOARD_VERSION = 'geared-v10';
+export const BOARD_VERSION = 'sprint250-v11';
 export const COOKIE_NAME = 'ddg_player';
 export const MAX_RACE_SECONDS = 600;
 export class PublicError extends Error {

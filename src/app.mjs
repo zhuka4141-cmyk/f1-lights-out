@@ -20,7 +20,7 @@ const clearHeld = () => {
   attribute('throttleButton', 'aria-pressed', false); attribute('brakeButton', 'aria-pressed', false);
 };
 const pedalKeys = new Map([['KeyW', 'throttle'], ['KeyS', 'brake'], ['Space', 'throttle'], ['ArrowRight', 'throttle'], ['ArrowLeft', 'brake']]);
-let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null, submittingScore = false;
+let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null, submittingScore = false, startFlashShown = false;
 const activeDrive = () => ['driving', 'skidding'].includes(drive.phase);
 function fitReport() {
   const panel = $('resultPanel'); if (panel.hidden) return;
@@ -32,6 +32,12 @@ window.addEventListener('resize', fitReport);
 function advance(now = performance.now()) {
   if (activeDrive()) { drive.step(Math.max(0, (now - driveClock) / 1000)); driveClock = now; }
 }
+function updateStart(now) {
+  sequence.tick(now);
+  if (sequence.phase === 'go' && !startFlashShown) {
+    startFlashShown = true; $('launchFlash').classList.add('flash');
+  }
+}
 function resetConsent() {
   board.offer(null); $('scoreConsent').hidden = $('scoreForm').hidden = $('saveFeedback').hidden = true;
   $('scoreForm').reset(); $('driverName').removeAttribute('aria-invalid'); $('saveFeedback').classList.remove('error');
@@ -41,6 +47,7 @@ function begin() {
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
   clearHeld(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
   board.startRun();
+  startFlashShown = false; $('launchFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
   $('liveReaction').hidden = $('brakeGauge').hidden = true;
@@ -76,7 +83,7 @@ function press(pedal, source) {
   if (sequence.phase === 'idle') { begin(); return; }
   if (pedal === 'brake') { held.brake.add(source); return; }
   // Refresh the lights before the input, using the same clock as rendering.
-  const now = performance.now(); sequence.tick(now);
+  const now = performance.now(); updateStart(now);
   const result = sequence.accelerate(now);
   if (result?.type === 'valid') {
     drive.launch(result.ms); driveClock = now;
@@ -99,6 +106,7 @@ function home(event) {
   if (submittingScore) return;
   event?.preventDefault(); if (!world) return;
   clearHeld(); resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
+  startFlashShown = false; $('launchFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('resultPanel').hidden = $('resultScrim').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('introPanel').hidden = false; $('throttleButton').disabled = true;
@@ -205,7 +213,7 @@ $('scoreForm').addEventListener('submit', async event => {
 const rpm = [...$('rpmStrip').children];
 function frame(now) {
   if (world) {
-    sequence.tick(now); advance(now); world.setLights(sequence.lights);
+    updateStart(now); advance(now); world.setLights(sequence.lights);
     if (!resultShown && ['collision', 'engine-blown'].includes(drive.result?.type)) {
       if (collisionAt === null) {
         collisionAt = now; clearHeld();

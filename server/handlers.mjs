@@ -41,7 +41,6 @@ export function createHandlers({ store, secret, now = Date.now }) {
     leaderboard: wrap(async (req, res) => {
       if (req.method === 'GET') {
         const entries = await store.entries();
-        res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=5, stale-while-revalidate=10');
         return json(res, 200, { entries, version: BOARD_VERSION, updatedAt: now() });
       }
       if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); throw new PublicError('请求方法无效。', 405); }

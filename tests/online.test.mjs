@@ -11,7 +11,7 @@ function finishedRace() {
     if (drive.speed * 3.6 > 248) drive.setThrottle(false);
     drive.step(.01);
   }
-  drive.step(7.55); drive.setBraking(true); drive.step(1); drive.setBraking(false); drive.step(.5); drive.setBraking(true); drive.step(20);
+  drive.step(2.6); drive.setBraking(true); drive.step(1); drive.setBraking(false); drive.step(.5); drive.setBraking(true); drive.step(20);
   assert.equal(drive.result.type, 'valid');
   return { ms: drive.ms, duration: drive.elapsed, inputs: drive.inputs, distanceCm: drive.result.distanceCm, finishMs: drive.result.finishMs };
 }

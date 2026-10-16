@@ -16,15 +16,15 @@ const crossLine = () => {
   }
   assert.equal(d.finishCrossed, true); assert.equal(d.result, null); return d;
 };
-const stop = (d, coast = 7.55, dt = .05) => {
+const stop = (d, coast = 2.6, dt = .05) => {
   advance(d, coast, dt); d.setBraking(true); advance(d, 1, dt);
   d.setBraking(false); advance(d, .5, dt); d.setBraking(true); advance(d, 20, dt); return d;
 };
-const successfulRun = (coast = 7.55) => stop(crossLine(), coast);
+const successfulRun = (coast = 2.6) => stop(crossLine(), coast);
 const adapter = (storage = new Map()) => ({ getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) });
 
-test('1250 m finish and 1750 m obstacle with a 250 km/h ceiling', () => {
-  assert.equal(RULES.distance, 1250); assert.equal(RULES.roadblockGap, 500); near(RULES.maxSpeed * 3.6, 250);
+test('1250 m finish and 1500 m obstacle with a 250 km/h ceiling', () => {
+  assert.equal(RULES.distance, 1250); assert.equal(RULES.roadblockGap, 250); near(RULES.maxSpeed * 3.6, 250);
 });
 test('manual throttle is required and releasing it coasts, with no automatic acceleration', () => {
   const d = drive(); d.step(2); near(d.speed, 0); near(d.distance, 0); assert.equal(d.result, null);
@@ -118,8 +118,8 @@ test('crossing is solved within acceleration, coasting and braking slices', () =
 });
 test('pulsed braking can stop less than one metre before the roadblock', () => {
   const d = successfulRun(); assert.equal(d.result.type, 'valid'); assert.equal(isScoringResult(d.result), true);
-  assert.ok(d.distance > 1250 && d.distance < 1750); assert.ok(d.result.distanceCm < 100);
-  assert.equal(d.result.offsetCm, Math.round((d.distance - 1750) * 100));
+  assert.ok(d.distance > 1250 && d.distance < 1500); assert.ok(d.result.distanceCm < 100);
+  assert.equal(d.result.offsetCm, Math.round((d.distance - 1500) * 100));
   assert.equal(d.result.finishMs, 213 + Math.round(d.finishAt * 1000));
   assert.equal(d.result.totalMs, 213 + Math.round(d.elapsed * 1000));
   assert.ok(d.result.finishMs < d.result.totalMs); near(d.history.at(-1).speed, 0);
@@ -184,26 +184,26 @@ test('the car cannot tunnel through the obstacle during low frame rates or long 
   const expected = crossLine(); expected.step(100);
   for (const dt of [1 / 30, 1 / 60, 1 / 144, .8, 100]) {
     const d = crossLine(); advance(d, 100, dt);
-    assert.equal(d.result.type, 'collision'); near(d.distance, 1750); near(d.elapsed, expected.elapsed);
+    assert.equal(d.result.type, 'collision'); near(d.distance, 1500); near(d.elapsed, expected.elapsed);
     assert.equal(d.result.offsetCm, 0); assert.equal(overallScore(d.result), 0);
   }
 });
 test('collision telemetry retains the actual impact speed', () => {
-  const d = crossLine(); d.step(8.3); d.setBraking(true); d.step(10);
+  const d = crossLine(); d.step(3); d.setBraking(true); d.step(10);
   assert.equal(d.result.type, 'collision'); assert.ok(d.result.stats.outcomeSpeed > 0);
   near(d.history.at(-1).speed, d.result.stats.outcomeSpeed);
 });
 test('identical brake inputs remain stable across render rates', () => {
   const baseline = successfulRun();
   for (const dt of [1 / 30, 1 / 144, .7, 25]) {
-    const d = stop(crossLine(), 7.55, dt); assert.equal(d.result.type, baseline.result.type);
+    const d = stop(crossLine(), 2.6, dt); assert.equal(d.result.type, baseline.result.type);
     near(d.distance, baseline.distance, 1e-6); near(d.elapsed, baseline.elapsed, 1e-6);
     assert.equal(d.result.finishMs, baseline.result.finishMs); near(d.peakPressure, baseline.peakPressure);
   }
 });
 test('a centimetre-rounded stop just before the obstacle saves but failures never do', () => {
-  let low = 7.55, high = 7.7;
-  for (let i = 0; i < 40; i++) { const mid = (low + high) / 2; if (successfulRun(mid).distance < 1749.999) low = mid; else high = mid; }
+  let low = 2.6, high = 2.7;
+  for (let i = 0; i < 40; i++) { const mid = (low + high) / 2; if (successfulRun(mid).distance < 1499.999) low = mid; else high = mid; }
   const d = successfulRun(low); assert.equal(d.result.type, 'valid'); assert.equal(d.result.offsetCm, 0);
   const board = new LocalLeaderboard(adapter()); board.offer(d.result); board.agree(); board.save('极限');
   for (const type of ['collision', 'skid', 'engine-blown', 'short-stop', 'false-start', 'timeout', 'cancelled', 'overshoot']) {
@@ -211,7 +211,7 @@ test('a centimetre-rounded stop just before the obstacle saves but failures neve
     board.offer(r); board.agree(); assert.throws(() => board.save('失败'), /有效/);
   }
   assert.equal(isScoringResult({ ...d.result, offsetCm: 1, distanceCm: 1 }), false);
-  assert.equal(isScoringResult({ ...d.result, offsetCm: -50001, distanceCm: 50001 }), false);
+  assert.equal(isScoringResult({ ...d.result, offsetCm: -25001, distanceCm: 25001 }), false);
 });
 test('consented records survive reload and old rules remain in separate storage', () => {
   const storage = new Map([['lights-out-250-finish-line-leaderboard-v8', 'legacy'], ['lights-out-250-roadblock-leaderboard-v9', 'manual-legacy']]), store = adapter(storage);

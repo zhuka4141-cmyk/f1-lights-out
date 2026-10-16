@@ -1,6 +1,6 @@
 export const RULES = Object.freeze({
   distance: 1250,
-  roadblockGap: 500,
+  roadblockGap: 250,
   maxSpeed: 250 / 3.6,
   acceleration: 10,
   coastDeceleration: 2.2,
@@ -271,17 +271,17 @@ export class DriveChallenge {
   }
 }
 
-export const STORAGE_KEY = 'lights-out-250-geared-leaderboard-v10';
-export const overallScore = entry => !validResult(entry) || (entry.type != null && entry.type !== 'valid') ? 0
+export const STORAGE_KEY = 'lights-out-250m-runoff-leaderboard-v11';
+export const overallScore = (entry, roadblockGap = RULES.roadblockGap) => !validResult(entry, roadblockGap) || (entry.type != null && entry.type !== 'valid') ? 0
   : 50 / (1 + entry.distanceCm / 500) + 30 / (1 + entry.finishMs / 20000) + 20 / (1 + entry.ms / 300);
 const compare = (a, b) => (overallScore(b) ?? -1) - (overallScore(a) ?? -1)
   || a.distanceCm - b.distanceCm || a.finishMs - b.finishMs || a.ms - b.ms || a.at - b.at;
 
 // Each metric chooses a driver's own best round before assigning ranks.
 // Equal values share a rank; a faster reaction cannot change a distance rank.
-export function rankLeaderboard(entries, metric) {
+export function rankLeaderboard(entries, metric, roadblockGap = RULES.roadblockGap) {
   if (!['distanceCm', 'ms', 'finishMs', 'score'].includes(metric)) throw new Error('未知排名指标');
-  const value = entry => metric === 'score' ? Math.round(overallScore(entry) * 100) / 100 : entry[metric];
+  const value = entry => metric === 'score' ? Math.round(overallScore(entry, roadblockGap) * 100) / 100 : entry[metric];
   const direction = metric === 'score' ? -1 : 1;
   const ordered = [...entries].sort((a, b) => direction * (value(a) - value(b)) || a.at - b.at || a.id.localeCompare(b.id));
   const drivers = new Set(), best = ordered.filter(entry => {
@@ -298,14 +298,14 @@ export function rankLeaderboard(entries, metric) {
 
 const validName = name => typeof name === 'string' && name.trim().length > 0
   && [...name.trim()].length <= 20 && !/[\u0000-\u001f\u007f]/.test(name);
-const validResult = result => Number.isInteger(result?.ms) && result.ms >= 0 && result.ms <= 10000
+const validResult = (result, roadblockGap = RULES.roadblockGap) => Number.isInteger(result?.ms) && result.ms >= 0 && result.ms <= 10000
   && Number.isSafeInteger(result.finishMs)
   && result.finishMs >= result.ms + Math.ceil(RULES.distance / RULES.maxSpeed * 1000)
   && Number.isSafeInteger(result.totalMs) && result.totalMs >= result.finishMs
-  && Number.isInteger(result.offsetCm) && result.offsetCm >= -RULES.roadblockGap * 100
+  && Number.isInteger(result.offsetCm) && result.offsetCm >= -roadblockGap * 100
   && result.offsetCm <= 0
   && result.distanceCm === Math.abs(result.offsetCm);
-export const isScoringResult = result => result?.type === 'valid' && validResult(result);
+export const isScoringResult = (result, roadblockGap = RULES.roadblockGap) => result?.type === 'valid' && validResult(result, roadblockGap);
 export class LocalLeaderboard {
   constructor(storage) {
     this.storage = storage; this.entries = [];

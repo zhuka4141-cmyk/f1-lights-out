@@ -15,7 +15,7 @@ export function renderLeaderboard(entries, selectedId = null) {
       const row = document.createElement('tr');
       row.classList.toggle('selected', entry.id === selectedId);
       for (const value of [String(entry.rank).padStart(2, '0'), entry.name, format(entry[metric])]) {
-        const cell = document.createElement('td'); cell.textContent = value; row.append(cell);
+        const cell = document.createElement('td'); cell.textContent = value; cell.title = value; row.append(cell);
       }
       target.append(row);
     }
