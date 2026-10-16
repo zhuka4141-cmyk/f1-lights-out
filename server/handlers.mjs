@@ -32,11 +32,12 @@ export function createHandlers({ store, secret, now = Date.now }) {
       if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); throw new PublicError('请求方法无效。', 405); }
       checkOrigin(req); const key = secret();
       if (!key) throw new Error('StorageNotConfigured');
+      const name = normalizeName(bodyOf(req).name);
       const playerId = playerCookie(req, key) || randomBytes(16).toString('hex');
       const secure = req.headers.host?.startsWith('localhost:') || req.headers.host?.startsWith('127.0.0.1:') ? '' : '; Secure';
       res.setHeader('Set-Cookie', `${COOKIE_NAME}=${sign(playerId, key)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${secure}`);
-      const { token } = issueRun(playerId, key, now());
-      return json(res, 201, { token, playerId, version: BOARD_VERSION });
+      const { token } = issueRun(playerId, key, now(), name);
+      return json(res, 201, { token, playerId, name, version: BOARD_VERSION });
     }),
     leaderboard: wrap(async (req, res) => {
       if (req.method === 'GET') {
@@ -47,7 +48,9 @@ export function createHandlers({ store, secret, now = Date.now }) {
       checkOrigin(req);
       const body = bodyOf(req), key = secret(); if (!key) throw new Error('StorageNotConfigured');
       const ticket = verifyRun(body.token, playerCookie(req, key), key, now());
-      const name = normalizeName(body.name), result = replayRace(body.proof);
+      const name = normalizeName(body.name);
+      if (ticket.name != null && name !== ticket.name) throw new PublicError('请使用本轮开始时的名字记录成绩。');
+      const result = replayRace(body.proof);
       if (now() - ticket.issuedAt + 3000 < result.totalMs) throw new PublicError('比赛计时无效，请重新挑战。');
       const entry = await store.save(entryFor(name, ticket, result));
       const entries = await store.entries({ fresh: true });

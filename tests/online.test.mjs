@@ -79,10 +79,30 @@ test('API rejects cross-site writes, missing player cookies, impossible clocks a
   assert.equal(res.statusCode, 400); assert.match(res.body.error, /计时/);
 });
 test('run endpoint issues a secure private cookie and supports repeat visits without losing player identity', async () => {
-  const handlers = service(), first = response(); await handlers.runs(request('POST'), first);
+  const handlers = service(), first = response(); await handlers.runs(request('POST', '', { name:'玩家' }), first);
   assert.equal(first.statusCode, 201); assert.match(first.headers['Set-Cookie'], /HttpOnly; SameSite=Lax/); assert.match(first.headers['Set-Cookie'], /Secure/);
-  const second = response(); await handlers.runs(request('POST', first.headers['Set-Cookie'].split(';')[0]), second);
+  const second = response(); await handlers.runs(request('POST', first.headers['Set-Cookie'].split(';')[0], { name:'玩家' }), second);
   assert.equal(first.body.playerId, second.body.playerId); assert.notEqual(first.body.token, second.body.token);
+});
+
+test('starting a round requires a name and the signed ticket binds all saves to that name', async () => {
+  let clock = issuedAt;
+  const entries = new Map();
+  const handlers = createHandlers({ store:{ async save(entry) { entries.set(entry.id,entry); return entry; }, async entries() { return [...entries.values()]; } },
+    secret:()=>secret, now:()=>clock });
+  for (const name of [undefined, '', '  ', 'x'.repeat(21), '\u200b']) {
+    const res = response(); await handlers.runs(request('POST','',{name}),res);
+    assert.equal(res.statusCode,400); assert.equal(res.body.token,undefined);
+  }
+  const start = response(); await handlers.runs(request('POST','',{name:'  Ｗ王  '}),start);
+  assert.equal(start.statusCode,201); assert.equal(start.body.name,'W王');
+  const cookie = start.headers['Set-Cookie'].split(';')[0], token = start.body.token;
+  assert.equal(verifyRun(token,start.body.playerId,secret,clock).name,'W王');
+  clock += 120000;
+  const renamed = response(); await handlers.leaderboard(request('POST',cookie,{name:'另一个人',token,proof}),renamed);
+  assert.equal(renamed.statusCode,400); assert.equal(entries.size,0);
+  const saved = response(); await handlers.leaderboard(request('POST',cookie,{name:'W王',token,proof}),saved);
+  assert.equal(saved.statusCode,200); assert.equal(saved.body.entry.name,'W王'); assert.equal(entries.size,1);
 });
 test('server failures give a retryable error without exposing storage credentials', async () => {
   const handlers = createHandlers({ store: { entries() { throw new Error('private token: do-not-publish'); } }, secret: () => secret });

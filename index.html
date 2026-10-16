@@ -30,7 +30,13 @@
           <li><p>尽快冲过 1250 米终点，冲线后动力切断。</p><p lang="en">Cross the 1,250 m finish fast. Power cuts at the line.</p></li>
           <li><p>停在 250 米外的路障前，越近越好。刹车压力到 115% 会打滑，松开卸压。</p><p lang="en">Stop close to the barrier 250 m beyond. Release the brake before pressure reaches 115% to avoid locking up.</p></li>
         </ul>
-        <button id="confirmStartButton" class="rules-start-button" type="button">开始游戏<span lang="en">START GAME</span></button>
+        <form id="startForm" class="start-form" novalidate>
+          <label for="driverName">车手名字 <small lang="en">DRIVER NAME · REQUIRED</small></label>
+          <input id="driverName" name="driverName" type="text" autocomplete="nickname" maxlength="40" required placeholder="输入名字 / Enter your name" aria-describedby="nameNotice nameError">
+          <p id="nameNotice" class="name-notice">有效成绩将以此名字自动记录到公开排行榜。<span lang="en">Valid results are automatically saved to the public leaderboard under this name.</span></p>
+          <p id="nameError" class="name-error" role="alert" hidden></p>
+          <button id="confirmStartButton" class="rules-start-button" type="submit">开始游戏<span lang="en">START GAME</span></button>
+        </form>
         <p class="music-credit" lang="en">Music: <a href="https://freesound.org/people/humanoide9000/sounds/769113/" target="_blank" rel="noopener">Sport News Music — Luis Humanoide</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a><br>SFX: Ears68 · audible-edge · unfa · Kenney — <a href="licenses/Racing-Audio-Credits.txt" target="_blank" rel="noopener">CC0 / credits</a></p>
       </div>
     </dialog>
@@ -53,7 +59,7 @@
     <div class="result-scrim" id="resultScrim" hidden></div>
     <section class="result" id="resultPanel" hidden role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
       <div class="result-content" id="resultContent">
-      <div class="report-summary"><p class="eyebrow result-eyebrow">SESSION REPORT <span id="resultBadge">已停稳</span></p>
+      <div class="report-summary"><p class="eyebrow result-eyebrow">SESSION REPORT · <b id="resultDriver"></b> <span id="resultBadge">已停稳</span></p>
       <h2 id="resultTitle">漂亮刹停。</h2><p class="result-description" id="resultDescription"></p>
       <div class="stop-offset"><span id="offsetLabel">车头距路障</span><strong id="resultTime">—</strong><small id="resultUnit">m</small></div>
       <p class="completion-time" id="completionTime"></p></div>
@@ -61,9 +67,7 @@
       <div class="chart-panel acceleration-chart"><div class="chart-heading"><strong>加速过程</strong><div class="chart-legend"><span class="speed-key">车速 km/h</span></div></div><div id="accelerationChart"></div><p class="chart-note">起步至冲线 · 白色为车速</p></div>
       <div class="chart-panel"><div class="chart-heading"><strong>制动过程</strong><div class="chart-legend"><span class="speed-key">车速 km/h</span><span class="pressure-key">压力 %</span></div></div><div id="brakeChart"></div><p class="chart-note" id="chartNote">从第一次刹车开始，含松开滑行时间；红虚线为 115% 打滑线。</p></div>
       <div class="session-score"><span>本轮综合得分</span><strong id="sessionScore">0</strong><small>距离 50% · 冲线时间 30% · 起步反应 20%</small></div>
-      <div class="score-consent" id="scoreConsent" hidden><p>把这次成绩加入在线排行榜？</p><div class="choice-buttons"><button class="secondary-button" id="saveYes">记录成绩</button><button class="text-button" id="saveNo">这次不记录</button></div><small>提交后，昵称与成绩会公开显示。</small></div>
-      <form id="scoreForm" hidden novalidate><label for="driverName">车手名字</label><div class="name-entry"><input id="driverName" name="driverName" type="text" autocomplete="off" maxlength="40" placeholder="输入名字，最多 20 个字" aria-describedby="saveFeedback"><button class="secondary-button" type="submit">提交上榜</button></div><button class="text-button" id="cancelSave" type="button">暂不记录</button></form>
-      <p id="saveFeedback" class="save-feedback" role="status" hidden></p>
+      <div class="score-record" id="scoreRecord" hidden><p id="saveFeedback" class="save-feedback" role="status" hidden></p><button class="text-button retry-save" id="retrySaveButton" type="button" hidden>重试记录 / RETRY SAVE</button></div>
       <div class="result-actions"><button class="primary-button retry" id="retryButton">再挑战一次 <span aria-hidden="true">↻</span></button><button class="text-button" id="resultHomeButton">返回主页</button></div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { DriveChallenge, isScoringResult, overallScore } from '../src/core.mjs';
+import { normalizePlayerName } from '../src/player-name.mjs';
 
 export const BOARD_VERSION = 'sprint250-v11';
 export const COOKIE_NAME = 'ddg_player';
@@ -21,8 +22,9 @@ export function playerCookie(req, secret) {
   const id = unsign(raw?.slice(COOKIE_NAME.length + 1), secret);
   return /^[a-f0-9]{32}$/.test(id || '') ? id : null;
 }
-export function issueRun(playerId, secret, now = Date.now()) {
-  const ticket = { id: randomBytes(16).toString('hex'), playerId, version: BOARD_VERSION, issuedAt: now };
+export function issueRun(playerId, secret, now = Date.now(), name) {
+  const ticket = { id: randomBytes(16).toString('hex'), playerId, version: BOARD_VERSION, issuedAt: now,
+    ...(name == null ? {} : { name:normalizeName(name) }) };
   return { ticket, token: sign(Buffer.from(JSON.stringify(ticket)).toString('base64url'), secret) };
 }
 export function verifyRun(token, playerId, secret, now = Date.now()) {
@@ -36,9 +38,8 @@ export function verifyRun(token, playerId, secret, now = Date.now()) {
   return ticket;
 }
 export function normalizeName(value) {
-  const name = typeof value === 'string' ? value.normalize('NFKC').trim() : '';
-  if (!name || [...name].length > 20 || /[\p{Cc}\p{Cf}]/u.test(name)) throw new PublicError('请输入名字，最多 20 个字。');
-  return name;
+  try { return normalizePlayerName(value); }
+  catch (error) { throw new PublicError(error.message); }
 }
 export function replayRace(proof) {
   if (!proof || !Number.isInteger(proof.ms) || proof.ms < 0 || proof.ms > 10000

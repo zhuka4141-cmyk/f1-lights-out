@@ -6,6 +6,7 @@ import { renderLeaderboard } from './leaderboard.mjs';
 import { COLLISION_REPLAY_MS } from './impact.mjs';
 import { createMusic } from './music.mjs';
 import { createRaceAudio } from './race-audio.mjs';
+import { normalizePlayerName } from './player-name.mjs';
 
 const elements = new Map();
 const $ = id => {
@@ -25,6 +26,12 @@ const clearHeld = () => {
 };
 const pedalKeys = new Map([['KeyW', 'throttle'], ['KeyS', 'brake'], ['Space', 'throttle'], ['ArrowRight', 'throttle'], ['ArrowLeft', 'brake']]);
 let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null, submittingScore = false, startFlashShown = false;
+const namePreference = 'dragondance-driver-name-v1';
+function rememberedName() {
+  try { return normalizePlayerName(localStorage.getItem(namePreference)); } catch { return ''; }
+}
+let playerName = rememberedName(), startingRace = false;
+$('driverName').value = playerName;
 const activeDrive = () => ['driving', 'skidding'].includes(drive.phase);
 function fitReport() {
   const panel = $('resultPanel'); if (panel.hidden) return;
@@ -42,22 +49,49 @@ function updateStart(now) {
     startFlashShown = true; $('launchFlash').classList.add('flash');
   }
 }
-function resetConsent() {
-  board.offer(null); $('scoreConsent').hidden = $('scoreForm').hidden = $('saveFeedback').hidden = true;
-  $('scoreForm').reset(); $('driverName').removeAttribute('aria-invalid'); $('saveFeedback').classList.remove('error');
+function resetRecord() {
+  board.offer(null); $('scoreRecord').hidden = $('saveFeedback').hidden = $('retrySaveButton').hidden = true;
+  $('saveFeedback').classList.remove('error');
 }
 function showHowToPlay() {
-  if (!world || submittingScore || $('leaderboardDialog').open || $('howToPlayDialog').open || sequence.phase !== 'idle') return;
-  clearHeld(); $('howToPlayDialog').showModal(); $('confirmStartButton').focus({ preventScroll: true });
+  if (!world || startingRace || submittingScore || $('leaderboardDialog').open || $('howToPlayDialog').open || sequence.phase !== 'idle') return;
+  clearHeld(); $('nameError').hidden = true; $('driverName').removeAttribute('aria-invalid');
+  $('howToPlayDialog').showModal();
+  (playerName ? $('confirmStartButton') : $('driverName')).focus({ preventScroll:true });
 }
-function begin() {
-  if (submittingScore) return;
+async function begin() {
+  if (submittingScore || startingRace) return;
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
+  let name;
+  try { name = normalizePlayerName($('driverName').value); }
+  catch (error) {
+    if (!$('howToPlayDialog').open) $('howToPlayDialog').showModal();
+    $('nameError').textContent = error.message; $('nameError').hidden = false;
+    $('driverName').setAttribute('aria-invalid','true'); $('driverName').focus({ preventScroll:true }); return;
+  }
+  startingRace = true; $('nameError').hidden = true;
+  $('confirmStartButton').disabled = $('retryButton').disabled = $('driverName').disabled = $('leaderboardButton').disabled = true;
+  $('confirmStartButton').setAttribute('aria-busy','true');
+  // Unlock both audio players in the original click, before waiting for a ticket.
+  music.start(); raceAudio.start();
+  try {
+    await board.startRun(name);
+    playerName = name; $('driverName').value = name;
+    try { localStorage.setItem(namePreference,name); } catch { /* Name remains required for this session. */ }
+  } catch (error) {
+    music.stop(); raceAudio.stop();
+    const message = '未能开始新一轮：' + error.message;
+    const feedback = $('howToPlayDialog').open ? $('nameError') : $('saveFeedback');
+    feedback.textContent = message; feedback.hidden = false; feedback.classList.add('error');
+    if (feedback === $('saveFeedback')) $('scoreRecord').hidden = false;
+    return;
+  } finally {
+    startingRace = false;
+    $('confirmStartButton').disabled = $('retryButton').disabled = $('driverName').disabled = $('leaderboardButton').disabled = false;
+    $('confirmStartButton').removeAttribute('aria-busy');
+  }
   $('howToPlayDialog').close();
-  music.start();
-  raceAudio.start();
-  clearHeld(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
-  board.startRun();
+  clearHeld(); resetRecord(); drive.reset(); world.reset(); sequence.start(performance.now());
   startFlashShown = false; $('launchFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
@@ -72,8 +106,9 @@ function showResult(result) {
   if (!result || resultShown) return;
   resultShown = true; clearHeld(); music.finish(); raceAudio.finish();
   $('leaderboardButton').disabled = false;
-  resetConsent(); renderReport(result); board.offer(result, drive);
-  $('scoreConsent').hidden = !isScoringResult(result);
+  resetRecord(); renderReport(result); board.offer(result, drive);
+  $('resultDriver').textContent = playerName;
+  $('scoreRecord').hidden = !isScoringResult(result);
   $('introPanel').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('resultPanel').hidden = $('resultScrim').hidden = false;
   fitReport();
@@ -81,6 +116,7 @@ function showResult(result) {
   $('brakeButton').disabled = true; $('brakeButton').classList.remove('down');
   document.body.dataset.phase = 'result'; $('resultPanel').scrollTop = 0;
   $('resultPanel').focus({ preventScroll: true });
+  if (isScoringResult(result)) void saveResult();
 }
 function syncInput() {
   advance();
@@ -114,12 +150,12 @@ function cancel() {
   if (result) { world?.setLights(0); showResult(result); }
 }
 function home(event) {
-  if (submittingScore) return;
+  if (submittingScore || startingRace) return;
   event?.preventDefault(); if (!world) return;
   music.stop();
   raceAudio.stop();
   $('howToPlayDialog').close();
-  clearHeld(); resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
+  clearHeld(); resetRecord(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
   startFlashShown = false; $('launchFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('resultPanel').hidden = $('resultScrim').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
@@ -143,13 +179,9 @@ async function refreshBoard() {
 }
 function openBoard() { cancel(); renderBoard(); $('leaderboardDialog').showModal(); refreshBoard(); }
 setInterval(() => { if ($('leaderboardDialog').open && !document.hidden) refreshBoard(); }, 15000);
-function skipSave() {
-  if (submittingScore) return;
-  resetConsent(); $('saveFeedback').hidden = false; $('saveFeedback').textContent = '这次成绩未记录。'; $('retryButton').focus({ preventScroll: true });
-}
 $('startButton').addEventListener('click', showHowToPlay);
-$('confirmStartButton').addEventListener('click', begin);
-$('howToPlayDialog').addEventListener('cancel', clearHeld);
+$('startForm').addEventListener('submit', event => { event.preventDefault(); void begin(); });
+$('howToPlayDialog').addEventListener('cancel', event => { if (startingRace) event.preventDefault(); else clearHeld(); });
 $('retryButton').addEventListener('click', begin);
 $('resultHomeButton').addEventListener('click', home);
 $('leaderboardButton').addEventListener('click', openBoard);
@@ -180,6 +212,7 @@ window.addEventListener('keydown', event => {
     if (event.code === 'Escape') { event.preventDefault(); home(); return; }
     if (event.code === 'Tab') {
       const focusable = [...$('resultPanel').querySelectorAll('button,input')].filter(element => element.getClientRects().length && !element.disabled);
+      if (!focusable.length) { event.preventDefault(); return; }
       const first = focusable[0], last = focusable.at(-1);
       if (event.shiftKey && (document.activeElement === first || document.activeElement === $('resultPanel'))) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && (document.activeElement === last || document.activeElement === $('resultPanel'))) { event.preventDefault(); first.focus(); }
@@ -196,37 +229,33 @@ window.addEventListener('keyup', event => {
 });
 window.addEventListener('blur', () => { clearHeld(); if (drive.phase === 'driving') syncInput(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
-$('saveYes').addEventListener('click', () => { board.agree(); $('scoreConsent').hidden = true; $('scoreForm').hidden = false; $('driverName').focus({ preventScroll: true }); });
-$('saveNo').addEventListener('click', skipSave); $('cancelSave').addEventListener('click', skipSave);
-$('driverName').addEventListener('input', () => { $('driverName').removeAttribute('aria-invalid'); $('saveFeedback').hidden = true; });
-$('scoreForm').addEventListener('submit', async event => {
-  event.preventDefault();
-  const submit = $('scoreForm').querySelector('[type="submit"]');
-  if (submit.disabled) return;
-  submittingScore = true; submit.disabled = true; submit.textContent = '提交中…';
-  $('cancelSave').disabled = $('driverName').disabled = true;
+$('driverName').addEventListener('input', () => { $('driverName').removeAttribute('aria-invalid'); $('nameError').hidden = true; });
+$('retrySaveButton').addEventListener('click', () => { void saveResult(); });
+async function saveResult() {
+  if (submittingScore || board.saved || !board.result) return;
+  submittingScore = true;
+  $('saveFeedback').hidden = false; $('saveFeedback').classList.remove('error');
+  $('saveFeedback').textContent = `正在以 ${playerName} 记录成绩…`;
+  $('retrySaveButton').hidden = true; $('leaderboardButton').disabled = true;
   $('retryButton').disabled = $('resultHomeButton').disabled = true;
   try {
-    const entry = await board.save($('driverName').value); selectedId = entry.id;
-    $('scoreForm').hidden = true; $('saveFeedback').hidden = false; $('saveFeedback').classList.remove('error');
+    const entry = await board.save(); selectedId = entry.id;
     const ranks = [['distanceCm', '距离'], ['ms', '反应'], ['finishMs', '冲线'], ['score', '综合得分']].map(([metric, label]) => {
       const best = rankLeaderboard(board.entries, metric).find(item => leaderboardIdentity(item) === leaderboardIdentity(entry));
       return `${label}第 ${best.rank} 名`;
     });
     $('saveFeedback').textContent = `${entry.name}，已上在线榜 · ${ranks.join(' · ')}`;
     $('boardStatus').textContent = '所有玩家共享';
-    renderBoard(); $('leaderboardDialog').showModal();
+    renderBoard();
   } catch (error) {
-    const nameError = error.message.includes('名字');
     $('saveFeedback').hidden = false; $('saveFeedback').classList.add('error');
-    $('saveFeedback').textContent = error.message;
-    $('driverName').setAttribute('aria-invalid', String(nameError)); $('driverName').focus({ preventScroll: true });
+    $('saveFeedback').textContent = '成绩暂未记录：' + error.message;
+    $('retrySaveButton').hidden = false;
   } finally {
-    submittingScore = false; $('cancelSave').disabled = $('driverName').disabled = false;
-    submit.disabled = false; submit.textContent = '提交上榜';
+    submittingScore = false; $('leaderboardButton').disabled = false;
     $('retryButton').disabled = $('resultHomeButton').disabled = false;
   }
-});
+}
 const rpm = [...$('rpmStrip').children];
 function frame(now) {
   if (world) {
