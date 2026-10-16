@@ -1,4 +1,4 @@
-import { RULES, StartSequence, DriveChallenge, LocalLeaderboard, rankLeaderboard } from './core.mjs';
+import { RULES, StartSequence, DriveChallenge, LocalLeaderboard, rankLeaderboard, isScoringResult } from './core.mjs';
 import { createScene } from './scene.mjs';
 import { renderReport } from './report.mjs';
 import { renderLeaderboard } from './leaderboard.mjs';
@@ -46,7 +46,7 @@ function showResult(result) {
   resultShown = true; held.clear();
   $('leaderboardButton').disabled = false;
   resetConsent(); renderReport(result); board.offer(result);
-  $('scoreConsent').hidden = result.type !== 'valid';
+  $('scoreConsent').hidden = !isScoringResult(result);
   $('introPanel').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('resultPanel').hidden = $('resultScrim').hidden = false;
   $('throttleButton').disabled = true; $('throttleButton').classList.remove('ready', 'down');

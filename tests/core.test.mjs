@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DriveChallenge, RULES, StartSequence, LocalLeaderboard, STORAGE_KEY, overallScore, rankLeaderboard } from '../src/core.mjs';
+import { DriveChallenge, RULES, StartSequence, LocalLeaderboard, STORAGE_KEY, overallScore, rankLeaderboard, isScoringResult } from '../src/core.mjs';
 const near = (actual, expected, tolerance = 1e-7) => assert.ok(Math.abs(actual - expected) < tolerance, `${actual} != ${expected}`);
 const drive = () => { const d = new DriveChallenge(); d.launch(213); return d; };
 const successfulRun = (brakeAt = 19.90718127409207) => {
@@ -44,7 +44,7 @@ test('pulsed manual braking can produce a valid stop immediately before the fini
   near(d.history.at(-1).speed, 0); assert.ok(d.history.some(sample => sample.pressure < 70 && sample.time > 1.5));
 });
 
-test('the car can enter the runoff but a stop beyond the finish line is invalid', () => {
+test('a controlled stop beyond the finish line scores and remains on all boards after reload', () => {
   const crossing = drive(); crossing.step(21.54422222222222);
   assert.equal(crossing.phase, 'driving'); assert.equal(crossing.result, null);
   assert.ok(crossing.distance > 1250 && crossing.distance < 1260);
@@ -53,8 +53,48 @@ test('the car can enter the runoff but a stop beyond the finish line is invalid'
   assert.ok(d.distance > 1250 && d.distance < 1260);
   assert.equal(d.result.offsetCm, 290); assert.equal(d.result.distanceCm, 290);
   near(d.history.at(-1).speed, 0);
-  const board = new LocalLeaderboard({ getItem: () => null }); board.offer(d.result); board.agree();
-  assert.throws(() => board.save('越线车手'), /有效/);
+  assert.equal(isScoringResult(d.result), true); assert.ok(overallScore(d.result) > 0);
+  const storage = new Map();
+  const adapter = { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) };
+  const board = new LocalLeaderboard(adapter); board.offer(d.result);
+  assert.throws(() => board.save('越线车手'), /同意/); board.agree();
+  const entry = board.save('越线车手', 1000);
+  assert.equal(entry.offsetCm, 290); assert.equal(entry.distanceCm, 290);
+  const reloaded = new LocalLeaderboard(adapter); assert.deepEqual(reloaded.entries, [entry]);
+  for (const metric of ['distanceCm', 'ms', 'totalMs', 'score']) {
+    assert.equal(rankLeaderboard(reloaded.entries, metric)[0].id, entry.id);
+    assert.equal(rankLeaderboard(reloaded.entries, metric)[0].rank, 1);
+  }
+});
+
+test('equal distances before and after the line earn equal scores; closer stops score higher', () => {
+  const after = successfulRun(19.95038127409207).result;
+  const before = { ...after, type: 'valid', offsetCm: -after.offsetCm };
+  assert.equal(isScoringResult(before), true); near(overallScore(after), overallScore(before));
+  assert.ok(overallScore({ ...after, offsetCm: 10, distanceCm: 10 }) > overallScore(after));
+  assert.ok(overallScore({ ...after, offsetCm: 900, distanceCm: 900 }) < overallScore(after));
+});
+
+test('a stop just short of the roadblock can be saved; collisions and other failures cannot', () => {
+  const brakeAt = 19.90718127409207
+    + (RULES.distance + RULES.roadblockGap - .001 - successfulRun().distance) / RULES.maxSpeed;
+  const d = successfulRun(brakeAt);
+  assert.equal(d.result.type, 'overshoot'); assert.ok(d.distance < 1260);
+  assert.equal(d.result.offsetCm, 1000); assert.equal(isScoringResult(d.result), true);
+  const storage = new Map();
+  const adapter = { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) };
+  const board = new LocalLeaderboard(adapter); board.offer(d.result); board.agree();
+  const entry = board.save('路障前停稳', 1000);
+  assert.deepEqual(new LocalLeaderboard(adapter).entries, [entry]);
+  const collision = drive(); collision.step(30);
+  for (const result of [collision.result, ...['skid', 'false-start', 'timeout', 'cancelled'].map(type => ({ ...d.result, type }))]) {
+    assert.equal(isScoringResult(result), false); board.offer(result); board.agree();
+    assert.throws(() => board.save('失败回合'), /有效/);
+  }
+  const outOfBounds = { ...d.result, offsetCm: 1001, distanceCm: 1001 };
+  assert.equal(isScoringResult(outOfBounds), false);
+  storage.set(STORAGE_KEY, JSON.stringify([entry, { ...entry, ...outOfBounds, id: 'outside' }]));
+  assert.deepEqual(new LocalLeaderboard(adapter).entries, [entry]);
 });
 test('collision never tunnels through the row at low or high render rates or long frames', () => {
   for (const dt of [1 / 30, 1 / 60, 1 / 144, .8, 25]) {

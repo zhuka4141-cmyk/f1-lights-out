@@ -1,4 +1,4 @@
-import { RULES, overallScore } from './core.mjs';
+import { RULES, overallScore, isScoringResult } from './core.mjs';
 const NS = 'http://www.w3.org/2000/svg';
 const svgNode = (name, attributes = {}, text) => {
   const node = document.createElementNS(NS, name);
@@ -65,19 +65,20 @@ export function renderChart(target, stats, type) {
 }
 
 export function renderReport(result) {
-  const element = id => document.getElementById(id), valid = result.type === 'valid';
+  const element = id => document.getElementById(id), valid = isScoringResult(result);
   const failures = {
     'false-start': ['抢跑了。', '发车信号尚未发出。等待五组红灯全部熄灭，再踩油门。', '抢跑'],
     timeout: ['错过了发车。', '灯灭后 10 秒内未起步，重新就位再试一次。', '未起步'],
     cancelled: ['本轮已取消。', '比赛中离开页面会取消本轮成绩。', '已取消'],
     skid: ['刹车锁死，打滑。', '压力达到 115%，轮胎锁死。本轮无效；下次松开卸压，再分段刹车。', '打滑失败'],
-    overshoot: ['越过终点线。', `车头越过终点线 ${((result.distanceCm ?? 0) / 100).toFixed(2)} m，本轮无效。下次请在线前停稳。`, '越线失败'],
     collision: ['撞上路障。', `车辆撞上终点线后 ${RULES.roadblockGap} 米处的黄黑路障，本轮无效。${result.stats?.outcomeSpeed != null ? `碰撞速度 ${result.stats.outcomeSpeed.toFixed(1)} km/h。` : ''}`, '碰撞失败'],
   };
   const failure = failures[result.type] || failures.cancelled;
   element('resultPanel').classList.toggle('failure', !valid);
   element('resultTitle').textContent = valid ? (result.distanceCm <= 100 ? '贴近极限，稳稳停住。' : '刹停完成。') : failure[0];
-  element('resultDescription').textContent = valid ? '第一次刹车后动力已切断，全程靠滑行与手动刹车停稳。' : failure[1];
+  element('resultDescription').textContent = valid ? result.type === 'overshoot'
+    ? '已在终点线后停稳，按车头距终点线的距离计分。'
+    : '第一次刹车后动力已切断，全程靠滑行与手动刹车停稳。' : failure[1];
   element('resultBadge').textContent = valid ? '有效刹停' : failure[2];
   const hasOffset = Number.isFinite(result.offsetCm);
   element('offsetLabel').textContent = hasOffset ? result.offsetCm > 0 ? '越过终点线' : '车头距终点线' : '本轮结果';

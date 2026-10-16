@@ -208,8 +208,11 @@ const validName = name => typeof name === 'string' && name.trim().length > 0
   && [...name.trim()].length <= 20 && !/[\u0000-\u001f\u007f]/.test(name);
 const validResult = result => Number.isInteger(result?.ms) && result.ms >= 0 && result.ms <= 10000
   && Number.isSafeInteger(result.totalMs) && result.totalMs >= result.ms
-  && Number.isInteger(result.offsetCm) && result.offsetCm >= -RULES.distance * 100 && result.offsetCm <= 0
+  && Number.isInteger(result.offsetCm) && result.offsetCm >= -RULES.distance * 100
+  // A stop just short of the roadblock can round to the full gap in centimetres.
+  && result.offsetCm <= Math.round(RULES.roadblockGap * 100)
   && result.distanceCm === Math.abs(result.offsetCm);
+export const isScoringResult = result => ['valid', 'overshoot'].includes(result?.type) && validResult(result);
 export class LocalLeaderboard {
   constructor(storage) {
     this.storage = storage; this.entries = [];
@@ -220,7 +223,7 @@ export class LocalLeaderboard {
     } catch { /* Private browsing and invalid saved data leave an empty local board. */ }
     this.offer(null);
   }
-  offer(result) { this.result = result?.type === 'valid' && validResult(result) ? result : null; this.consented = false; this.saved = false; }
+  offer(result) { this.result = isScoringResult(result) ? result : null; this.consented = false; this.saved = false; }
   agree() { this.consented = true; }
   save(name, at = Date.now()) {
     if (this.saved) throw new Error('本轮已经记录。');
