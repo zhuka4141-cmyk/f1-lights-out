@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RULES } from './core.mjs';
 
 // Cache the complete downloaded tree from multiple angles, keeping its dense crown.
 // A reduced copy of that same model supplies nearby real-time shadows.
@@ -13,7 +14,8 @@ export function createVegetation(scene, shadowTree, atlas, metadata) {
     map.needsUpdate=true;
     return new THREE.SpriteMaterial({map,transparent:false,alphaTest:.3,alphaToCoverage:true,toneMapped:false,fog:true});
   });
-  for (let i=0;i<16;i++) {
+  const rows = Math.ceil((RULES.distance + RULES.roadblockGap + 220) / 105) + 1;
+  for (let i=0;i<rows;i++) {
     const z=10-i*105+Math.sin(i*2.7)*9;
     plants.push({x:-34-(i%3)*2,y:.3,z,scale:1.44+(i%4)*.055});
     if(i<4||i>9)plants.push({x:32+(i%3)*2,y:.3,z:z-27,scale:1.54+(i%3)*.05});

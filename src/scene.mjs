@@ -176,11 +176,12 @@ export async function createScene(container) {
     geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   };
   place('grass', 0, -.08, -650, [620, 1, 3200]).traverse(mesh => { if (mesh.isMesh) mesh.castShadow = false; });
-  for (let i = -2; i < Math.ceil((RULES.distance + 220) / 36); i++) {
+  const sceneryLength = RULES.distance + RULES.roadblockGap + 220;
+  for (let i = -2; i < Math.ceil(sceneryLength / 36); i++) {
     place(i >= 0 && i < 3 ? 'roadStartPositions' : 'roadStraightLong', 0, 0, -i * 36, 18)
       .traverse(mesh => { if (mesh.isMesh) mesh.castShadow = false; });
   }
-  for (let i = 0; i < 64; i++) {
+  for (let i = 0; i < Math.ceil(sceneryLength / 22); i++) {
     const z = 14 - i * 22;
     place('grandStandCovered', -19, .05, z, 16, Math.PI / 2);
     if (i < 14 || i > 45) {
@@ -196,7 +197,7 @@ export async function createScene(container) {
     for (const side of [-1, 1]) place('fenceStraight', side * 9.05, .36, z, [22, 6.4, 1.4], Math.PI / 2)
       .traverse(mesh => { if (mesh.isMesh) mesh.userData.detailKind = 'fence'; });
   }
-  for (let i = 0; i < 330; i++) {
+  for (let i = 0; i < Math.ceil(sceneryLength / 4.5); i++) {
     const z = 18 - i * 4.5;
     for (const side of [-1, 1]) place(i % 2 ? 'barrierRed' : 'barrierWhite', side * 8.4, .36, z, [18, 1.12 / .1312, .72 / .123], Math.PI / 2)
       .traverse(mesh => { if (mesh.isMesh) mesh.userData.detailKind = 'barrier'; });
@@ -476,7 +477,8 @@ export async function createScene(container) {
       const dt = Math.min(.1, Math.max(0, (now - lastTime) / 1000)); lastTime = now;
       const skid = drive.skidded ? 1 - Math.exp(-drive.skidTime * 3) : 0;
       const changed = drive.distance !== lastDistance || skid !== lastSkid;
-      const collision = drive.result?.type === 'collision';
+      const engineBlown = drive.result?.type === 'engine-blown';
+      const collision = drive.result?.type === 'collision' || engineBlown;
       const impactActive = collision && (lastImpactAge === null || lastImpactAge < 8);
       const orbiting = drive.phase === 'stopped' && !collision && resultBlend < 1;
       if (document.hidden || (!dirty && !changed && drive.phase === lastPhase && !orbiting && !impactActive)) {
@@ -486,7 +488,8 @@ export async function createScene(container) {
       car.position.x = laneX + skid * 2.8; car.rotation.y = Math.PI - skid * 1.15;
       roadside.update(car.position.z);
       updateStaticVisibility(car.position.z);
-      if (collision) collisionFX.start(now, { x:car.position.x, z:roadblockZ, speed:drive.result.stats.outcomeSpeed });
+      const impactZ = engineBlown ? car.position.z : roadblockZ;
+      if (collision) collisionFX.start(now, { x:car.position.x, z:impactZ, speed:drive.result.stats.outcomeSpeed, engine:engineBlown });
       const impactAge = collisionFX.update(now);
       lastImpactAge = impactAge;
       const narrow = container.clientWidth < 600;
@@ -496,7 +499,7 @@ export async function createScene(container) {
       if (impactAge !== null) {
         const blend = reducedMotion ? 1 : 1 - Math.exp(-impactAge * 3);
         eye.lerp(alternateEye.set(laneX + 5, 6, car.position.z + 14), blend);
-        target.set(laneX, 2.2, roadblockZ - 4);
+        target.set(laneX, 2.2, impactZ - (engineBlown ? 0 : 4));
         if (!reducedMotion) {
           const shake = .14 * Math.exp(-impactAge * 7);
           eye.x += Math.sin(now * .17) * shake; eye.y += Math.cos(now * .21) * shake;

@@ -6,7 +6,7 @@ export function renderLeaderboard(entries, selectedId = null) {
   const boards = [
     ['distanceRankRows', 'distanceCm', value => `${(value / 100).toFixed(2)} m`],
     ['reactionRankRows', 'ms', value => `${value} ms`],
-    ['completionRankRows', 'totalMs', value => `${(value / 1000).toFixed(3)} s`],
+    ['completionRankRows', 'finishMs', value => `${(value / 1000).toFixed(3)} s`],
     ['scoreRankRows', 'score', value => value.toFixed(2)],
   ];
   for (const [id, metric, format] of boards) {

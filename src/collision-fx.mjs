@@ -61,12 +61,15 @@ export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion)
   let state = null;
   const rotationMatrix = new THREE.Matrix4();
   return {
-    start(now, { x, z, speed }) {
+    start(now, { x, z, speed, engine = false }) {
       if (state) return;
       const strength = .35 + .65 * Math.min(1, Math.max(0, speed / 250));
-      state = { startedAt:now, x, z, strength, sparks:[] };
-      roadblocks.visible = false; effects.visible = true;
-      fragments.forEach(fragment => { fragment.motion = createDebrisMotion(fragment.origin, x, speed); });
+      state = { startedAt:now, x, z, strength, engine, sparks:[] };
+      roadblocks.visible = engine; effects.visible = true;
+      fragments.forEach(fragment => {
+        fragment.mesh.visible = !engine;
+        if (!engine) fragment.motion = createDebrisMotion(fragment.origin, x, speed);
+      });
       for (const p of particles) {
         Object.assign(p, { delay:Math.random() * (p.smoke ? .45 : .18), life:p.smoke ? 3.6 + Math.random() * 1.2 : .55 + Math.random() * .65,
           dx:(Math.random() - .5) * (p.smoke ? 5 : 4), dz:(Math.random() - .5) * 4,
@@ -85,6 +88,7 @@ export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion)
       if (!state) return null;
       const age = Math.max(0, (now - state.startedAt) / 1000), { x, z, strength } = state;
       fragments.forEach(({ mesh, motion, halfSize }) => {
+        if (state.engine) return;
         const sample = sampleDebris(motion, age);
         mesh.position.set(sample.x, sample.y, sample.z); mesh.rotation.set(...sample.rotation);
         rotationMatrix.makeRotationFromEuler(mesh.rotation);

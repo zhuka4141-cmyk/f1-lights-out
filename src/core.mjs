@@ -1,9 +1,9 @@
 export const RULES = Object.freeze({
   distance: 1250,
-  roadblockGap: 10,
+  roadblockGap: 500,
   maxSpeed: 250 / 3.6,
   acceleration: 10,
-  coastDeceleration: 1.1,
+  coastDeceleration: 2.2,
   brakeBase: 14.352,
   brakeGain: 28.704,
   pressureBaseRate: .1875,
@@ -37,30 +37,51 @@ export class StartSequence {
   finish(type, ms = null) { this.phase = 'result'; return this.result = { type, ms }; }
 }
 
-// Event boundaries are solved within each sample. The car cannot cross the
-// roadblock, miss a full-pressure lockup, or gain speed after its first brake.
+// Solve finish, overspeed, lockup, stop and impact events inside each sample.
 export class DriveChallenge {
   constructor() { this.reset(); }
   reset() {
     Object.assign(this, { phase: 'idle', speed: 0, distance: 0, elapsed: 0,
-      braking: false, propulsionCut: false, brakePressure: 0, skidded: false,
+      throttle: false, braking: false, propulsionCut: false, brakePressure: 0, skidded: false,
+      finishCrossed: false, finishAt: null,
       skidTime: 0, ms: null, result: null, firstBrakeAt: null,
       firstBrakeDistance: null, initialBrakeSpeed: null, peakPressure: 0,
-      outcomeSpeed: 0, history: [], nextSampleAt: 0 });
+      outcomeSpeed: 0, history: [], nextSampleAt: 0,
+      accelerationHistory: [], nextAccelerationSampleAt: 0 });
   }
   launch(ms) {
     if (!Number.isInteger(ms) || ms < 0 || ms > 10000) throw new Error('无效起步');
     if (this.phase !== 'idle') return false;
-    this.ms = ms; this.phase = 'driving'; return true;
+    this.ms = ms; this.phase = 'driving'; this.recordAcceleration(true); return true;
+  }
+  setThrottle(pressed) {
+    if (this.phase !== 'driving' || this.propulsionCut || this.finishCrossed) return false;
+    this.throttle = !!pressed; this.recordAcceleration(true); return true;
   }
   setBraking(pressed) {
     if (this.phase !== 'driving') return false;
-    if (pressed && !this.propulsionCut) {
-      this.propulsionCut = true; this.firstBrakeAt = this.elapsed;
+    if (pressed && this.firstBrakeAt == null) {
+      this.firstBrakeAt = this.elapsed;
       this.firstBrakeDistance = this.distance; this.initialBrakeSpeed = this.speed;
       this.record(true);
     }
     this.braking = !!pressed; return true;
+  }
+  crossFinish() {
+    if (this.finishCrossed) return;
+    this.distance = RULES.distance; this.recordAcceleration(true);
+    this.finishCrossed = true; this.finishAt = this.elapsed;
+    this.throttle = false; this.propulsionCut = true;
+  }
+  recordAcceleration(force = false) {
+    if (this.ms == null || this.finishCrossed) return;
+    const time = this.elapsed;
+    const sample = { time, speed: this.speed * 3.6, throttle: this.throttle ? 100 : 0 };
+    const last = this.accelerationHistory.at(-1);
+    if (last && Math.abs(last.time - time) < EPS) Object.assign(last, sample);
+    else if (force || time + EPS >= this.nextAccelerationSampleAt) {
+      this.accelerationHistory.push(sample); this.nextAccelerationSampleAt = time + .05;
+    }
   }
   record(force = false) {
     if (this.firstBrakeAt == null) return;
@@ -79,7 +100,7 @@ export class DriveChallenge {
     while (remaining > EPS && ['driving', 'skidding'].includes(this.phase)) {
       const slice = Math.min(remaining, .05);
       this.integrate(slice);
-      if (['driving', 'skidding'].includes(this.phase)) this.record();
+      if (['driving', 'skidding'].includes(this.phase)) { this.record(); this.recordAcceleration(); }
       remaining -= slice;
     }
   }
@@ -89,27 +110,38 @@ export class DriveChallenge {
     while (remaining > EPS && ['driving', 'skidding'].includes(this.phase)) {
       const gap = Math.max(0, R.distance + R.roadblockGap - this.distance);
       if (gap <= EPS) { this.finish('collision'); break; }
-      if (this.phase === 'skidding' || (this.propulsionCut && !this.braking)) {
+      const lineGap = this.finishCrossed ? Infinity : Math.max(0, R.distance - this.distance);
+      if (lineGap <= EPS) { this.crossFinish(); continue; }
+      if (this.speed < EPS && !this.finishCrossed && !this.skidded && (!this.throttle || this.braking)) {
+        this.brakePressure = this.braking ? Math.min(R.skidPressure, this.brakePressure + R.pressureBaseRate * remaining)
+          : Math.max(0, this.brakePressure - R.pressureReleaseRate * remaining);
+        this.peakPressure = Math.max(this.peakPressure, this.brakePressure);
+        this.elapsed += remaining; break;
+      }
+      if (this.phase === 'skidding' || (!this.braking && !this.throttle)) {
         const deceleration = this.skidded ? R.skidDeceleration : R.coastDeceleration;
         const stopTime = this.speed / deceleration;
-        const collisionTime = gap <= this.speed ** 2 / (2 * deceleration)
-          ? 2 * gap / (this.speed + Math.sqrt(Math.max(0, this.speed ** 2 - 2 * deceleration * gap))) : Infinity;
-        const dt = Math.min(remaining, stopTime, collisionTime);
+        const timeTo = distance => distance <= this.speed ** 2 / (2 * deceleration)
+          ? 2 * distance / (this.speed + Math.sqrt(Math.max(0, this.speed ** 2 - 2 * deceleration * distance))) : Infinity;
+        const collisionTime = timeTo(gap), lineTime = timeTo(lineGap);
+        const dt = Math.min(remaining, stopTime, collisionTime, lineTime);
         this.distance += this.speed * dt - .5 * deceleration * dt ** 2;
         this.speed = Math.max(0, this.speed - deceleration * dt);
         this.brakePressure = Math.max(0, this.brakePressure - R.pressureReleaseRate * dt);
         this.elapsed += dt; remaining -= dt;
         if (this.skidded) this.skidTime += dt;
+        if (dt >= lineTime - EPS) this.crossFinish();
         if (dt >= collisionTime - EPS) this.finish('collision');
         else if (this.speed < EPS) this.finish(this.skidded ? 'skid' : 'valid');
       } else if (this.braking) {
         const coefficient = R.pressureSpeedRate / R.maxSpeed;
         const omega = Math.sqrt(coefficient * R.brakeGain);
-        const shiftedPressure = this.brakePressure + R.brakeBase / R.brakeGain;
+        const brakeBase = R.brakeBase - (this.throttle ? R.acceleration : 0);
+        const shiftedPressure = this.brakePressure + brakeBase / R.brakeGain;
         const initialRate = R.pressureBaseRate + coefficient * this.speed;
         const evaluate = t => {
           const pressure = shiftedPressure * Math.cos(omega * t)
-            + initialRate / omega * Math.sin(omega * t) - R.brakeBase / R.brakeGain;
+            + initialRate / omega * Math.sin(omega * t) - brakeBase / R.brakeGain;
           return { pressure,
             speed: (-shiftedPressure * omega * Math.sin(omega * t) + initialRate * Math.cos(omega * t) - R.pressureBaseRate) / coefficient,
             distance: (pressure - this.brakePressure - R.pressureBaseRate * t) / coefficient };
@@ -119,49 +151,59 @@ export class DriveChallenge {
           for (let i = 0; i < 48; i++) { const mid = (low + high) / 2; if (predicate(evaluate(mid))) high = mid; else low = mid; }
           return high;
         };
-        const stopTime = solve(this.speed / (R.brakeBase + R.brakeGain * this.brakePressure), value => value.speed <= 0);
+        const stopTime = solve(this.speed / (brakeBase + R.brakeGain * this.brakePressure), value => value.speed <= 0);
         const lockTime = evaluate(stopTime).pressure >= R.skidPressure
           ? solve(stopTime, value => value.pressure >= R.skidPressure) : Infinity;
         let dt = Math.min(remaining, stopTime, lockTime);
         const collision = evaluate(dt).distance >= gap - EPS;
         if (collision) dt = solve(dt, value => value.distance >= gap);
+        const crossing = evaluate(dt).distance >= lineGap - EPS;
+        if (crossing) dt = solve(dt, value => value.distance >= lineGap);
         const value = evaluate(dt);
         this.distance += value.distance; this.speed = Math.max(0, value.speed);
         this.brakePressure = Math.min(R.skidPressure, value.pressure);
         this.peakPressure = Math.max(this.peakPressure, this.brakePressure);
         this.elapsed += dt; remaining -= dt;
-        if (collision) this.finish('collision');
+        if (crossing) this.crossFinish();
+        if (collision && !crossing) this.finish('collision');
         else if (this.speed < EPS) this.finish('valid');
         else if (dt >= lockTime - EPS) {
           this.brakePressure = R.skidPressure; this.skidded = true;
-          this.phase = 'skidding'; this.braking = false; this.record(true);
+          this.phase = 'skidding'; this.braking = this.throttle = false; this.record(true);
         }
       } else {
+        // Reaching exactly 250 is safe; requesting further acceleration is not.
         const toMax = Math.max(0, (R.maxSpeed - this.speed) / R.acceleration);
-        const acceleratingDistance = (R.maxSpeed ** 2 - this.speed ** 2) / (2 * R.acceleration);
-        const collisionTime = gap <= acceleratingDistance
-          ? (Math.sqrt(this.speed ** 2 + 2 * R.acceleration * gap) - this.speed) / R.acceleration
-          : toMax + (gap - acceleratingDistance) / R.maxSpeed;
-        const dt = Math.min(remaining, collisionTime), acceleratingTime = Math.min(dt, toMax);
-        this.distance += this.speed * acceleratingTime + .5 * R.acceleration * acceleratingTime ** 2
-          + R.maxSpeed * (dt - acceleratingTime);
+        if (toMax <= EPS) { this.finish('engine-blown'); break; }
+        const timeTo = distance => Number.isFinite(distance)
+          ? 2 * distance / (Math.sqrt(this.speed ** 2 + 2 * R.acceleration * distance) + this.speed) : Infinity;
+        const collisionTime = timeTo(gap), lineTime = timeTo(lineGap);
+        const dt = Math.min(remaining, toMax, collisionTime, lineTime);
+        this.distance += this.speed * dt + .5 * R.acceleration * dt ** 2;
         this.speed = Math.min(R.maxSpeed, this.speed + R.acceleration * dt);
+        this.brakePressure = Math.max(0, this.brakePressure - R.pressureReleaseRate * dt);
         this.elapsed += dt; remaining -= dt;
+        if (dt >= lineTime - EPS) this.crossFinish();
         if (dt >= collisionTime - EPS) this.finish('collision');
       }
     }
   }
   finish(type) {
-    if (type === 'valid' && this.distance > RULES.distance + EPS) type = 'overshoot';
+    // A normal stop before the line keeps the race and its clock running.
+    if (type === 'valid' && !this.finishCrossed) {
+      this.speed = 0; this.record(true); this.recordAcceleration(true); return null;
+    }
     this.outcomeSpeed = this.speed * 3.6;
     if (type === 'collision') this.distance = RULES.distance + RULES.roadblockGap;
+    this.recordAcceleration(true);
     // A collision's final sample keeps its real impact speed instead of
     // drawing a fictitious controlled stop to zero on the telemetry chart.
-    if (type === 'collision') this.record(true);
-    this.speed = 0; this.phase = 'stopped'; this.braking = false;
-    if (type !== 'collision') this.record(true);
-    const offsetCm = Math.round((this.distance - RULES.distance) * 100);
+    if (['collision', 'engine-blown'].includes(type)) this.record(true);
+    this.speed = 0; this.phase = 'stopped'; this.braking = this.throttle = false;
+    if (!['collision', 'engine-blown'].includes(type)) this.record(true);
+    const offsetCm = Math.round((this.distance - RULES.distance - RULES.roadblockGap) * 100) || 0;
     this.result = { type, ms: this.ms, totalMs: this.ms + Math.round(this.elapsed * 1000),
+      finishMs: this.finishAt == null ? null : this.ms + Math.round(this.finishAt * 1000),
       offsetCm, distanceCm: Math.abs(offsetCm), stats: this.getStats() };
     return this.result;
   }
@@ -170,25 +212,27 @@ export class DriveChallenge {
       brakeTime: this.firstBrakeAt == null ? null : this.elapsed - this.firstBrakeAt,
       brakeDistance: this.firstBrakeDistance == null ? null : this.distance - this.firstBrakeDistance,
       peakPressure: this.firstBrakeAt == null ? null : this.peakPressure * 100,
-      outcomeSpeed: this.outcomeSpeed, history: this.history.map(sample => ({ ...sample })) };
+      outcomeSpeed: this.outcomeSpeed, history: this.history.map(sample => ({ ...sample })),
+      accelerationHistory: this.accelerationHistory.map(sample => ({ ...sample })) };
   }
   cancel() {
     if (!['driving', 'skidding'].includes(this.phase)) return null;
-    this.phase = 'cancelled'; this.braking = false;
+    this.recordAcceleration(true);
+    this.phase = 'cancelled'; this.braking = this.throttle = false;
     return this.result = { type: 'cancelled', ms: this.ms, stats: this.getStats() };
   }
 }
 
-export const STORAGE_KEY = 'lights-out-250-finish-line-leaderboard-v8';
-export const overallScore = entry => entry.totalMs == null ? null
-  : 50 / (1 + entry.distanceCm / 500) + 30 / (1 + entry.totalMs / 20000) + 20 / (1 + entry.ms / 300);
+export const STORAGE_KEY = 'lights-out-250-roadblock-leaderboard-v9';
+export const overallScore = entry => !validResult(entry) || (entry.type != null && entry.type !== 'valid') ? 0
+  : 50 / (1 + entry.distanceCm / 500) + 30 / (1 + entry.finishMs / 20000) + 20 / (1 + entry.ms / 300);
 const compare = (a, b) => (overallScore(b) ?? -1) - (overallScore(a) ?? -1)
-  || a.distanceCm - b.distanceCm || a.totalMs - b.totalMs || a.ms - b.ms || a.at - b.at;
+  || a.distanceCm - b.distanceCm || a.finishMs - b.finishMs || a.ms - b.ms || a.at - b.at;
 
 // Each metric chooses a driver's own best round before assigning ranks.
 // Equal values share a rank; a faster reaction cannot change a distance rank.
 export function rankLeaderboard(entries, metric) {
-  if (!['distanceCm', 'ms', 'totalMs', 'score'].includes(metric)) throw new Error('未知排名指标');
+  if (!['distanceCm', 'ms', 'finishMs', 'score'].includes(metric)) throw new Error('未知排名指标');
   const value = entry => metric === 'score' ? Math.round(overallScore(entry) * 100) / 100 : entry[metric];
   const direction = metric === 'score' ? -1 : 1;
   const ordered = [...entries].sort((a, b) => direction * (value(a) - value(b)) || a.at - b.at || a.id.localeCompare(b.id));
@@ -207,12 +251,13 @@ export function rankLeaderboard(entries, metric) {
 const validName = name => typeof name === 'string' && name.trim().length > 0
   && [...name.trim()].length <= 20 && !/[\u0000-\u001f\u007f]/.test(name);
 const validResult = result => Number.isInteger(result?.ms) && result.ms >= 0 && result.ms <= 10000
-  && Number.isSafeInteger(result.totalMs) && result.totalMs >= result.ms
-  && Number.isInteger(result.offsetCm) && result.offsetCm >= -RULES.distance * 100
-  // A stop just short of the roadblock can round to the full gap in centimetres.
-  && result.offsetCm <= Math.round(RULES.roadblockGap * 100)
+  && Number.isSafeInteger(result.finishMs)
+  && result.finishMs >= result.ms + Math.ceil(RULES.distance / RULES.maxSpeed * 1000)
+  && Number.isSafeInteger(result.totalMs) && result.totalMs >= result.finishMs
+  && Number.isInteger(result.offsetCm) && result.offsetCm >= -RULES.roadblockGap * 100
+  && result.offsetCm <= 0
   && result.distanceCm === Math.abs(result.offsetCm);
-export const isScoringResult = result => ['valid', 'overshoot'].includes(result?.type) && validResult(result);
+export const isScoringResult = result => result?.type === 'valid' && validResult(result);
 export class LocalLeaderboard {
   constructor(storage) {
     this.storage = storage; this.entries = [];
@@ -230,8 +275,8 @@ export class LocalLeaderboard {
     if (!this.result) throw new Error('只有有效刹停才能上榜。');
     if (!this.consented) throw new Error('请先同意记录成绩。');
     if (!validName(name)) throw new Error('请输入名字，最多 20 个字。');
-    const { ms, totalMs, offsetCm, distanceCm } = this.result;
-    const entry = { id: `${at}-${Math.random().toString(36).slice(2, 10)}`, name: name.trim(), ms, totalMs, offsetCm, distanceCm, at };
+    const { ms, finishMs, totalMs, offsetCm, distanceCm } = this.result;
+    const entry = { id: `${at}-${Math.random().toString(36).slice(2, 10)}`, name: name.trim(), ms, finishMs, totalMs, offsetCm, distanceCm, at };
     const entries = [...this.entries, entry].sort(compare);
     this.storage.setItem(STORAGE_KEY, JSON.stringify(entries));
     this.entries = entries; this.saved = true; return entry;

@@ -13,19 +13,23 @@ const text = (id, value) => { const node = $(id), next = String(value); if (node
 const attribute = (id, name, value) => { const node = $(id), next = String(value); if (node.getAttribute(name) !== next) node.setAttribute(name,next); };
 const sequence = new StartSequence(), drive = new DriveChallenge();
 const board = new LocalLeaderboard({ getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) });
-const held = new Set();
-let world, driveClock = 0, keyHeld = false, resultShown = false, selectedId = null, collisionAt = null;
+const held = { throttle: new Set(), brake: new Set() }, keysHeld = new Set();
+const clearHeld = () => {
+  held.throttle.clear(); held.brake.clear(); keysHeld.clear();
+  attribute('throttleButton', 'aria-pressed', false); attribute('brakeButton', 'aria-pressed', false);
+};
+const pedalKeys = new Map([['KeyW', 'throttle'], ['KeyS', 'brake'], ['Space', 'throttle'], ['ArrowRight', 'throttle'], ['ArrowLeft', 'brake']]);
+let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null;
 const activeDrive = () => ['driving', 'skidding'].includes(drive.phase);
+function fitReport() {
+  const panel = $('resultPanel'); if (panel.hidden) return;
+  const scale = Math.min(1, (window.innerHeight - 16) / panel.offsetHeight, (window.innerWidth - 16) / panel.offsetWidth);
+  panel.style.setProperty('--report-scale', String(scale));
+}
+new ResizeObserver(fitReport).observe($('resultContent'));
+window.addEventListener('resize', fitReport);
 function advance(now = performance.now()) {
   if (activeDrive()) { drive.step(Math.max(0, (now - driveClock) / 1000)); driveClock = now; }
-}
-function pedalMode(brake) {
-  $('throttleButton').classList.toggle('brake-mode', brake);
-  $('pedalLabel').textContent = brake ? '刹车' : '油门';
-  $('pedalEnglish').textContent = brake ? 'BRAKE' : 'THROTTLE';
-  $('throttleButton').setAttribute('aria-label', brake ? '按住刹车' : '踩下油门');
-  if (brake) $('throttleButton').setAttribute('aria-pressed', 'false');
-  else $('throttleButton').removeAttribute('aria-pressed');
 }
 function resetConsent() {
   board.offer(null); $('scoreConsent').hidden = $('scoreForm').hidden = $('saveFeedback').hidden = true;
@@ -33,60 +37,69 @@ function resetConsent() {
 }
 function begin() {
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
-  held.clear(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
+  clearHeld(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
   $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('throttleButton').disabled = false; $('throttleButton').classList.remove('ready', 'down');
-  $('pedalHint').textContent = '灯灭后，再踩下'; pedalMode(false);
+  $('brakeButton').disabled = false; $('brakeButton').classList.remove('down');
+  $('pedalHint').textContent = '灯灭后，再踩下';
+  $('brakePedalHint').textContent = '可与油门同时踩';
   $('resultAnnouncement').textContent = ''; $('throttleButton').focus({ preventScroll: true });
 }
 function showResult(result) {
   if (!result || resultShown) return;
-  resultShown = true; held.clear();
+  resultShown = true; clearHeld();
   $('leaderboardButton').disabled = false;
   resetConsent(); renderReport(result); board.offer(result);
   $('scoreConsent').hidden = !isScoringResult(result);
   $('introPanel').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('resultPanel').hidden = $('resultScrim').hidden = false;
+  fitReport();
   $('throttleButton').disabled = true; $('throttleButton').classList.remove('ready', 'down');
+  $('brakeButton').disabled = true; $('brakeButton').classList.remove('down');
   document.body.dataset.phase = 'result'; $('resultPanel').scrollTop = 0;
   $('resultPanel').focus({ preventScroll: true });
 }
-function syncBrake() {
-  advance(); drive.setBraking(held.size > 0);
-  $('throttleButton').classList.toggle('down', drive.phase === 'driving' && drive.braking);
+function syncInput() {
+  advance();
+  drive.setThrottle(held.throttle.size > 0); drive.setBraking(held.brake.size > 0);
+  $('throttleButton').classList.toggle('down', drive.phase === 'driving' && drive.throttle);
+  $('brakeButton').classList.toggle('down', drive.phase === 'driving' && drive.braking);
 }
-function press(source) {
+function press(pedal, source) {
   if (!world || $('leaderboardDialog').open || resultShown) return;
-  if (drive.phase === 'driving') { held.add(source); syncBrake(); return; }
+  if (drive.phase === 'driving') { advance(); held[pedal].add(source); syncInput(); return; }
   if (sequence.phase === 'idle') { begin(); return; }
+  if (pedal === 'brake') { held.brake.add(source); return; }
   // Refresh the lights before the input, using the same clock as rendering.
   const now = performance.now(); sequence.tick(now);
   const result = sequence.accelerate(now);
   if (result?.type === 'valid') {
-    drive.launch(result.ms); driveClock = now; pedalMode(true);
+    drive.launch(result.ms); driveClock = now;
+    held.throttle.add(source); drive.setThrottle(true); drive.setBraking(held.brake.size > 0);
     $('liveReaction').hidden = $('brakeGauge').hidden = false;
     $('liveSecondary').textContent = `起步反应 ${result.ms} ms`;
-    $('pedalHint').textContent = '按住刹车 · 松开卸压';
+    $('pedalHint').textContent = '按住油门 · 超过 250 爆缸';
     $('throttleButton').classList.remove('ready');
   } else if (result) showResult(result);
 }
-function release(source) {
-  if (held.delete(source) && drive.phase === 'driving') syncBrake();
+function release(pedal, source) {
+  if (held[pedal].delete(source) && drive.phase === 'driving') syncInput();
 }
 function cancel() {
-  advance(); held.clear(); keyHeld = false;
+  advance(); clearHeld();
   const result = activeDrive() ? drive.cancel() : sequence.cancel();
   if (result) { world?.setLights(0); showResult(result); }
 }
 function home(event) {
   event?.preventDefault(); if (!world) return;
-  held.clear(); keyHeld = false; resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
+  clearHeld(); resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('resultPanel').hidden = $('resultScrim').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('introPanel').hidden = false; $('throttleButton').disabled = true;
-  $('throttleButton').classList.remove('ready', 'down'); pedalMode(false);
+  $('throttleButton').classList.remove('ready', 'down');
+  $('brakeButton').disabled = true; $('brakeButton').classList.remove('down');
   $('pedalHint').textContent = '灯灭后，再踩下';
   document.body.dataset.phase = 'idle'; $('resultAnnouncement').textContent = ''; $('startButton').focus({ preventScroll: true });
 }
@@ -106,16 +119,19 @@ $('leaderboardDialog').addEventListener('click', event => {
   const box = event.target.getBoundingClientRect();
   if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) event.target.close();
 });
-$('throttleButton').addEventListener('pointerdown', event => {
-  if (event.button !== 0) return;
-  event.preventDefault(); $('throttleButton').setPointerCapture(event.pointerId); press(`pointer-${event.pointerId}`);
-});
-for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) window.addEventListener(name, event => release(`pointer-${event.pointerId}`));
-$('throttleButton').addEventListener('contextmenu', event => event.preventDefault());
-$('throttleButton').addEventListener('click', event => {
-  if (event.detail !== 0 || keyHeld) return;
-  if (drive.phase === 'driving') { if (held.has('assistive')) release('assistive'); else press('assistive'); }
-  else press('assistive');
+for (const [pedal, id] of [['throttle', 'throttleButton'], ['brake', 'brakeButton']]) {
+  $(id).addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    event.preventDefault(); $(id).setPointerCapture(event.pointerId); press(pedal, `pointer-${event.pointerId}`);
+  });
+  $(id).addEventListener('contextmenu', event => event.preventDefault());
+  $(id).addEventListener('click', event => {
+    if (event.detail !== 0 || keysHeld.size) return;
+    if (held[pedal].has('assistive')) release(pedal, 'assistive'); else press(pedal, 'assistive');
+  });
+}
+for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) window.addEventListener(name, event => {
+  release('throttle', `pointer-${event.pointerId}`); release('brake', `pointer-${event.pointerId}`);
 });
 window.addEventListener('keydown', event => {
   if ($('leaderboardDialog').open) return;
@@ -129,12 +145,15 @@ window.addEventListener('keydown', event => {
     }
     return;
   }
-  if (event.code !== 'Space' || event.target.closest('input,textarea,select,[contenteditable=true],#leaderboardButton')) return;
-  event.preventDefault(); if (event.repeat || keyHeld) return;
-  keyHeld = true; press('keyboard');
+  const pedal = pedalKeys.get(event.code);
+  if (!pedal || event.target.closest('input,textarea,select,[contenteditable=true],#leaderboardButton')) return;
+  event.preventDefault(); if (event.repeat || keysHeld.has(event.code)) return;
+  keysHeld.add(event.code); press(pedal, `key-${event.code}`);
 });
-window.addEventListener('keyup', event => { if (event.code === 'Space') { keyHeld = false; release('keyboard'); } });
-window.addEventListener('blur', () => { keyHeld = false; held.clear(); if (drive.phase === 'driving') syncBrake(); });
+window.addEventListener('keyup', event => {
+  const pedal = pedalKeys.get(event.code); if (pedal) { keysHeld.delete(event.code); release(pedal, `key-${event.code}`); }
+});
+window.addEventListener('blur', () => { clearHeld(); if (drive.phase === 'driving') syncInput(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
 $('saveYes').addEventListener('click', () => { board.agree(); $('scoreConsent').hidden = true; $('scoreForm').hidden = false; $('driverName').focus({ preventScroll: true }); });
 $('saveNo').addEventListener('click', skipSave); $('cancelSave').addEventListener('click', skipSave);
@@ -145,7 +164,7 @@ $('scoreForm').addEventListener('submit', event => {
     const entry = board.save($('driverName').value); selectedId = entry.id;
     $('scoreForm').hidden = true; $('saveFeedback').hidden = false; $('saveFeedback').classList.remove('error');
     const driverKey = name => name.trim().normalize('NFKC').toLowerCase();
-    const ranks = [['distanceCm', '距离'], ['ms', '反应'], ['totalMs', '完成时间'], ['score', '综合得分']].map(([metric, label]) => {
+    const ranks = [['distanceCm', '距离'], ['ms', '反应'], ['finishMs', '冲线'], ['score', '综合得分']].map(([metric, label]) => {
       const best = rankLeaderboard(board.entries, metric).find(item => driverKey(item.name) === driverKey(entry.name));
       return `${label}第 ${best.rank} 名`;
     });
@@ -162,10 +181,10 @@ const rpm = [...$('rpmStrip').children];
 function frame(now) {
   if (world) {
     sequence.tick(now); advance(now); world.setLights(sequence.lights);
-    if (!resultShown && drive.result?.type === 'collision') {
+    if (!resultShown && ['collision', 'engine-blown'].includes(drive.result?.type)) {
       if (collisionAt === null) {
-        collisionAt = now; held.clear(); keyHeld = false;
-        $('throttleButton').disabled = $('leaderboardButton').disabled = true;
+        collisionAt = now; clearHeld();
+        $('brakeButton').disabled = $('throttleButton').disabled = $('leaderboardButton').disabled = true;
         $('liveReaction').hidden = $('brakeGauge').hidden = true;
       }
       if (now - collisionAt >= COLLISION_REPLAY_MS) showResult(drive.result);
@@ -176,13 +195,18 @@ function frame(now) {
     if (document.body.dataset.phase !== phase) document.body.dataset.phase = phase;
     $('throttleButton').classList.toggle('ready', phase === 'go');
     if (activeDrive()) {
-      const distanceToLine = RULES.distance - drive.distance;
-      text('liveLabel', distanceToLine < 0 ? '越过终点线' : '距终点线');
-      text('liveTime', Math.abs(distanceToLine).toFixed(2));
-      $('throttleButton').disabled = drive.skidded;
-      $('throttleButton').classList.toggle('down', drive.braking);
-      attribute('throttleButton', 'aria-pressed', drive.braking);
-      text('pedalHint', drive.skidded ? '轮胎锁死' : drive.propulsionCut ? '按住刹车 · 松开仅滑行' : '按住刹车 · 首次即断动力');
+      const remaining = RULES.distance + (drive.finishCrossed ? RULES.roadblockGap : 0) - drive.distance;
+      text('liveLabel', drive.finishCrossed ? '距路障' : '距终点线');
+      text('liveTime', Math.max(0, remaining).toFixed(2));
+      text('liveSecondary', drive.finishCrossed ? `冲线 ${((drive.ms + Math.round(drive.finishAt * 1000)) / 1000).toFixed(3)} s` : `起步反应 ${drive.ms} ms`);
+      $('throttleButton').disabled = drive.skidded || drive.finishCrossed;
+      $('brakeButton').disabled = drive.skidded;
+      $('throttleButton').classList.toggle('down', drive.throttle);
+      $('brakeButton').classList.toggle('down', drive.braking);
+      attribute('throttleButton', 'aria-pressed', drive.throttle);
+      attribute('brakeButton', 'aria-pressed', drive.braking);
+      text('pedalHint', drive.skidded ? '轮胎锁死' : drive.finishCrossed ? '已冲线 · 动力切断' : drive.speed * 3.6 >= 240 ? '接近 250！松开油门' : '按住加速 · 松开滑行');
+      text('brakePedalHint', drive.skidded ? '轮胎锁死' : drive.finishCrossed ? '按住刹车 · 松开滑行' : '可与油门同时踩');
     }
     const pressure = Math.max(0, drive.brakePressure * 100);
     text('pressureValue', `${pressure.toFixed(0)}%`);
@@ -193,9 +217,10 @@ function frame(now) {
     text('pressureHint', pressure >= 100 ? '接近 115%！松开卸压' : '可分段刹车');
     const speed = Math.round(drive.speed * 3.6), driving = drive.phase === 'driving';
     text('speed', String(speed).padStart(3, '0')); text('gear', speed < 1 ? 'N' : Math.min(8, 1 + Math.floor(speed / 40)));
-    const input = driving ? drive.braking ? Math.round(pressure) : drive.propulsionCut ? 0 : 100 : 0;
+    const input = driving ? drive.braking ? Math.round(pressure) : drive.throttle ? 100 : 0 : 0;
     if ($('inputValue').firstChild.textContent !== String(input)) $('inputValue').firstChild.textContent = input;
-    text('inputLabel', driving && drive.braking ? 'BRAKE' : drive.propulsionCut ? 'POWER OFF' : 'THROTTLE');
+    text('inputLabel', driving && drive.braking ? drive.throttle ? 'BRAKE + THR' : 'BRAKE' : drive.propulsionCut ? 'POWER OFF' : 'THROTTLE');
+    $('speed').classList.toggle('overspeed-warning', driving && speed >= 240);
     const bars = driving ? drive.braking ? Math.ceil(pressure / 115 * 12) : Math.min(12, 3 + speed / 30) : ['sequence', 'waiting'].includes(phase) ? 3 : 0;
     rpm.forEach((element, i) => element.classList.toggle('active', i < bars));
     world.render(now, drive);
