@@ -277,7 +277,11 @@ export const overallScore = (entry, roadblockGap = RULES.roadblockGap) => !valid
 const compare = (a, b) => (overallScore(b) ?? -1) - (overallScore(a) ?? -1)
   || a.distanceCm - b.distanceCm || a.finishMs - b.finishMs || a.ms - b.ms || a.at - b.at;
 
-// Each metric chooses a driver's own best round before assigning ranks.
+export function leaderboardIdentity(entry) {
+  return JSON.stringify([entry.playerId || '', entry.name.trim().normalize('NFKC').toLowerCase()]);
+}
+
+// Each device and nickname pair keeps its own best round for each metric.
 // Equal values share a rank; a faster reaction cannot change a distance rank.
 export function rankLeaderboard(entries, metric, roadblockGap = RULES.roadblockGap) {
   if (!['distanceCm', 'ms', 'finishMs', 'score'].includes(metric)) throw new Error('未知排名指标');
@@ -285,9 +289,9 @@ export function rankLeaderboard(entries, metric, roadblockGap = RULES.roadblockG
   const direction = metric === 'score' ? -1 : 1;
   const ordered = [...entries].sort((a, b) => direction * (value(a) - value(b)) || a.at - b.at || a.id.localeCompare(b.id));
   const drivers = new Set(), best = ordered.filter(entry => {
-    const name = entry.playerId || entry.name.trim().normalize('NFKC').toLowerCase();
-    if (drivers.has(name)) return false;
-    drivers.add(name); return true;
+    const identity = leaderboardIdentity(entry);
+    if (drivers.has(identity)) return false;
+    drivers.add(identity); return true;
   });
   let rank = 0;
   return best.map((entry, index) => {

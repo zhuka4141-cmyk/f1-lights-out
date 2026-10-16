@@ -70,6 +70,32 @@ test('admin lists all rounds, including non-winning results, while public ranks 
   const res = response(); await handlers.scores(request('GET', cookie()), res);
   assert.equal(res.statusCode, 200); assert.equal(res.body.entries.length, 2);
 });
+test('different nicknames sharing one browser rank independently while same-nickname rounds keep only their best', async () => {
+  const { store } = service();
+  const sameName = { ...second, ms: 190, finishMs: 22000 };
+  const otherName = { ...first, id: '3'.repeat(32), name: '王', distanceCm: 30, offsetCm: -30, ms: 240 };
+  const otherDevice = { ...first, id: '4'.repeat(32), playerId: 'b'.repeat(32), distanceCm: 90, offsetCm: -90 };
+  for (const entry of [first, sameName, otherName, otherDevice]) await store.save(entry);
+  const publicEntries = await store.entries();
+  for (const metric of ['distanceCm', 'ms', 'finishMs', 'score']) {
+    const ranked = rankLeaderboard(publicEntries, metric);
+    assert.equal(ranked.length, 3);
+    assert.equal(ranked.filter(entry => entry.name === '朱').length, 2);
+    assert.ok(ranked.some(entry => entry.name === '王'));
+  }
+  const fromSharedBrowser = metric => rankLeaderboard(publicEntries, metric).find(entry => entry.playerId === first.playerId && entry.name === '朱');
+  assert.equal(fromSharedBrowser('distanceCm').id, first.id);
+  assert.equal(fromSharedBrowser('ms').id, sameName.id);
+  assert.equal(fromSharedBrowser('finishMs').id, sameName.id);
+});
+
+test('case and width variants of a nickname do not create duplicate ranks on one device', async () => {
+  const { store } = service();
+  await store.save({ ...first, name: 'Kyle' });
+  await store.save({ ...second, name: ' ｋｙｌｅ ' });
+  for (const metric of ['distanceCm', 'ms', 'finishMs', 'score']) assert.equal(rankLeaderboard(await store.entries(), metric).length, 1);
+});
+
 test('edits persist across instances, recalculate overall score and keep immutable originals', async () => {
   const client = blobMemory(), a = createBlobStore('test', client), b = createBlobStore('test', client); await a.save(first);
   const values = { ...editableValues(first), name: '修改昵称', distanceCm: 25, ms: 180 };

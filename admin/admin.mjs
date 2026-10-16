@@ -1,4 +1,4 @@
-import { RULES, overallScore } from '/src/core.mjs';
+import { RULES, leaderboardIdentity, overallScore } from '/src/core.mjs';
 const $ = id => document.getElementById(id);
 let entries = [], audit = [], deletedView = false, page = 0, editing = null, removing = null, busy = false;
 const pageSize = 20, dateFormat = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Hong_Kong', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
@@ -23,7 +23,7 @@ async function request(url, options = {}) {
 function element(tag, text, className) { const node = document.createElement(tag); if (text != null) node.textContent = text; if (className) node.className = className; return node; }
 function render() {
   const active = entries.filter(entry => !entry.deleted);
-  $('activeCount').textContent = active.length; $('playerCount').textContent = new Set(active.map(entry => entry.playerId)).size;
+  $('activeCount').textContent = active.length; $('playerCount').textContent = new Set(active.map(leaderboardIdentity)).size;
   $('deletedCount').textContent = entries.length - active.length;
   $('activeTab').setAttribute('aria-pressed', String(!deletedView)); $('deletedTab').setAttribute('aria-pressed', String(deletedView));
   const search = $('searchInput').value.trim().normalize('NFKC').toLowerCase();
