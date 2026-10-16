@@ -1,9 +1,10 @@
-import { RULES, GEARBOX, StartSequence, DriveChallenge, rankLeaderboard, isScoringResult } from './core.mjs';
+import { RULES, GEARBOX, StartSequence, DriveChallenge, rankLeaderboard, leaderboardIdentity, isScoringResult } from './core.mjs';
 import { OnlineLeaderboard } from './online.mjs';
 import { createScene } from './scene.mjs';
 import { renderReport } from './report.mjs';
 import { renderLeaderboard } from './leaderboard.mjs';
 import { COLLISION_REPLAY_MS } from './impact.mjs';
+import { createMusic } from './music.mjs';
 
 const elements = new Map();
 const $ = id => {
@@ -14,6 +15,7 @@ const text = (id, value) => { const node = $(id), next = String(value); if (node
 const attribute = (id, name, value) => { const node = $(id), next = String(value); if (node.getAttribute(name) !== next) node.setAttribute(name,next); };
 const sequence = new StartSequence(), drive = new DriveChallenge();
 const board = new OnlineLeaderboard();
+const music = createMusic($('musicButton'), $('backgroundMusic'));
 const held = { throttle: new Set(), brake: new Set() }, keysHeld = new Set();
 const clearHeld = () => {
   held.throttle.clear(); held.brake.clear(); keysHeld.clear();
@@ -42,9 +44,15 @@ function resetConsent() {
   board.offer(null); $('scoreConsent').hidden = $('scoreForm').hidden = $('saveFeedback').hidden = true;
   $('scoreForm').reset(); $('driverName').removeAttribute('aria-invalid'); $('saveFeedback').classList.remove('error');
 }
+function showHowToPlay() {
+  if (!world || submittingScore || $('leaderboardDialog').open || $('howToPlayDialog').open || sequence.phase !== 'idle') return;
+  clearHeld(); $('howToPlayDialog').showModal(); $('confirmStartButton').focus({ preventScroll: true });
+}
 function begin() {
   if (submittingScore) return;
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
+  $('howToPlayDialog').close();
+  music.start();
   clearHeld(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
   board.startRun();
   startFlashShown = false; $('launchFlash').classList.remove('flash');
@@ -59,7 +67,7 @@ function begin() {
 }
 function showResult(result) {
   if (!result || resultShown) return;
-  resultShown = true; clearHeld();
+  resultShown = true; clearHeld(); music.finish();
   $('leaderboardButton').disabled = false;
   resetConsent(); renderReport(result); board.offer(result, drive);
   $('scoreConsent').hidden = !isScoringResult(result);
@@ -78,9 +86,9 @@ function syncInput() {
   $('brakeButton').classList.toggle('down', drive.phase === 'driving' && drive.braking);
 }
 function press(pedal, source) {
-  if (!world || $('leaderboardDialog').open || resultShown) return;
+  if (!world || $('leaderboardDialog').open || $('howToPlayDialog').open || resultShown) return;
   if (drive.phase === 'driving') { advance(); held[pedal].add(source); syncInput(); return; }
-  if (sequence.phase === 'idle') { begin(); return; }
+  if (sequence.phase === 'idle') { showHowToPlay(); return; }
   if (pedal === 'brake') { held.brake.add(source); return; }
   // Refresh the lights before the input, using the same clock as rendering.
   const now = performance.now(); updateStart(now);
@@ -105,6 +113,8 @@ function cancel() {
 function home(event) {
   if (submittingScore) return;
   event?.preventDefault(); if (!world) return;
+  music.stop();
+  $('howToPlayDialog').close();
   clearHeld(); resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
   startFlashShown = false; $('launchFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
@@ -133,7 +143,10 @@ function skipSave() {
   if (submittingScore) return;
   resetConsent(); $('saveFeedback').hidden = false; $('saveFeedback').textContent = '这次成绩未记录。'; $('retryButton').focus({ preventScroll: true });
 }
-$('startButton').addEventListener('click', begin); $('retryButton').addEventListener('click', begin);
+$('startButton').addEventListener('click', showHowToPlay);
+$('confirmStartButton').addEventListener('click', begin);
+$('howToPlayDialog').addEventListener('cancel', clearHeld);
+$('retryButton').addEventListener('click', begin);
 $('resultHomeButton').addEventListener('click', home);
 $('leaderboardButton').addEventListener('click', openBoard);
 $('refreshLeaderboard').addEventListener('click', refreshBoard);
@@ -158,7 +171,7 @@ for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) window.
   release('throttle', `pointer-${event.pointerId}`); release('brake', `pointer-${event.pointerId}`);
 });
 window.addEventListener('keydown', event => {
-  if ($('leaderboardDialog').open) return;
+  if ($('leaderboardDialog').open || $('howToPlayDialog').open) return;
   if (resultShown) {
     if (event.code === 'Escape') { event.preventDefault(); home(); return; }
     if (event.code === 'Tab') {
@@ -170,7 +183,7 @@ window.addEventListener('keydown', event => {
     return;
   }
   const pedal = pedalKeys.get(event.code);
-  if (!pedal || event.target.closest('input,textarea,select,[contenteditable=true],#leaderboardButton')) return;
+  if (!pedal || event.target.closest('input,textarea,select,[contenteditable=true],button:not(#throttleButton):not(#brakeButton),a')) return;
   event.preventDefault(); if (event.repeat || keysHeld.has(event.code)) return;
   keysHeld.add(event.code); press(pedal, `key-${event.code}`);
 });
@@ -193,7 +206,7 @@ $('scoreForm').addEventListener('submit', async event => {
     const entry = await board.save($('driverName').value); selectedId = entry.id;
     $('scoreForm').hidden = true; $('saveFeedback').hidden = false; $('saveFeedback').classList.remove('error');
     const ranks = [['distanceCm', '距离'], ['ms', '反应'], ['finishMs', '冲线'], ['score', '综合得分']].map(([metric, label]) => {
-      const best = rankLeaderboard(board.entries, metric).find(item => item.playerId === entry.playerId);
+      const best = rankLeaderboard(board.entries, metric).find(item => leaderboardIdentity(item) === leaderboardIdentity(entry));
       return `${label}第 ${best.rank} 名`;
     });
     $('saveFeedback').textContent = `${entry.name}，已上在线榜 · ${ranks.join(' · ')}`;
@@ -265,7 +278,7 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 createScene($('world')).then(scene => {
-  world = scene; $('startButton').disabled = false; $('startLabel').textContent = '开始';
+  world = scene; $('startButton').disabled = false; $('startLabel').textContent = '开始游戏';
 }).catch(error => {
   console.error('Race scene failed to load', error); $('startLabel').textContent = '场景装载失败'; $('loadError').hidden = false;
   $('loadError').textContent = '3D 场景未能启动。请使用支持 WebGL 的新版 Chrome、Edge 或 Safari，开启图形加速，并确认已上传整个项目的 assets、vendor 和 src 文件夹。';

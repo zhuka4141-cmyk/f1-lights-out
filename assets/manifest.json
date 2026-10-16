@@ -736,5 +736,14 @@
     "source_url": "https://polyhaven.com/a/modular_chainlink_fence",
     "license": "CC0",
     "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
+  },
+  {
+    "file": "assets/audio/cipher-kevin-macleod.mp3",
+    "bytes": 9252699,
+    "sha256": "d3d0614535a61d748e2fd8d5117fc4d781022a7624794802a2462d8af3fdd522",
+    "source": "Cipher — Kevin MacLeod (2011)",
+    "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100844&Search=Search",
+    "license": "CC BY 4.0",
+    "changes": "None. Original composer-supplied MP3; reduced playback volume and looping in the game."
   }
 ]

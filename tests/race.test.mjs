@@ -16,11 +16,11 @@ const crossLine = () => {
   }
   assert.equal(d.finishCrossed, true); assert.equal(d.result, null); return d;
 };
-const stop = (d, coast = 2.6, dt = .05) => {
-  advance(d, coast, dt); d.setBraking(true); advance(d, 1, dt);
-  d.setBraking(false); advance(d, .5, dt); d.setBraking(true); advance(d, 20, dt); return d;
+const stop = (d, coast = 2.45, dt = .05) => {
+  advance(d, coast, dt); d.setBraking(true); advance(d, .7, dt);
+  d.setBraking(false); advance(d, .7, dt); d.setBraking(true); advance(d, 20, dt); return d;
 };
-const successfulRun = (coast = 2.6) => stop(crossLine(), coast);
+const successfulRun = (coast = 2.45) => stop(crossLine(), coast);
 const adapter = (storage = new Map()) => ({ getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) });
 
 test('1250 m finish and 1500 m obstacle with a 250 km/h ceiling', () => {
@@ -172,9 +172,9 @@ test('acceleration telemetry records speed and pedal changes and ends at the exa
   const engine = drive(); engine.setThrottle(true); engine.step(10); near(engine.result.stats.accelerationHistory.at(-1).speed, 250);
   engine.reset(); assert.deepEqual(engine.accelerationHistory, []);
 });
-test('pressure rises promptly and only locks at 115 percent, not 100 percent', () => {
-  const d = drive(); d.setThrottle(true); d.step(6.8); d.setThrottle(false); d.setBraking(true); d.step(1);
-  assert.ok(d.brakePressure > .95 && d.brakePressure < .99); assert.equal(d.skidded, false);
+test('faster pressure reaches 100 percent in about 0.7 s but still locks only at 115 percent', () => {
+  const d = drive(); d.setThrottle(true); d.step(6.8); d.setThrottle(false); d.setBraking(true); d.step(.7);
+  assert.ok(d.brakePressure > .99 && d.brakePressure < 1); assert.equal(d.skidded, false);
   while (d.brakePressure < 1.01 && d.phase === 'driving') d.step(.001);
   assert.equal(d.skidded, false); assert.ok(d.brakePressure > 1); d.step(20);
   assert.equal(d.result.type, 'skid'); near(d.peakPressure, 1.15);
@@ -196,13 +196,13 @@ test('collision telemetry retains the actual impact speed', () => {
 test('identical brake inputs remain stable across render rates', () => {
   const baseline = successfulRun();
   for (const dt of [1 / 30, 1 / 144, .7, 25]) {
-    const d = stop(crossLine(), 2.6, dt); assert.equal(d.result.type, baseline.result.type);
+    const d = stop(crossLine(), 2.45, dt); assert.equal(d.result.type, baseline.result.type);
     near(d.distance, baseline.distance, 1e-6); near(d.elapsed, baseline.elapsed, 1e-6);
     assert.equal(d.result.finishMs, baseline.result.finishMs); near(d.peakPressure, baseline.peakPressure);
   }
 });
 test('a centimetre-rounded stop just before the obstacle saves but failures never do', () => {
-  let low = 2.6, high = 2.7;
+  let low = 2.45, high = 2.47;
   for (let i = 0; i < 40; i++) { const mid = (low + high) / 2; if (successfulRun(mid).distance < 1499.999) low = mid; else high = mid; }
   const d = successfulRun(low); assert.equal(d.result.type, 'valid'); assert.equal(d.result.offsetCm, 0);
   const board = new LocalLeaderboard(adapter()); board.offer(d.result); board.agree(); board.save('极限');
