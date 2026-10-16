@@ -6,11 +6,21 @@ export const RULES = Object.freeze({
   coastDeceleration: 2.2,
   brakeBase: 14.352,
   brakeGain: 28.704,
-  pressureBaseRate: .1875,
-  pressureSpeedRate: .75,
+  pressureBaseRate: .25,
+  pressureSpeedRate: 1,
   pressureReleaseRate: 1,
   skidPressure: 1.15,
   skidDeceleration: 10,
+});
+export const GEARBOX = Object.freeze({
+  upshiftKmh: Object.freeze([54, 88, 120, 151, 180, 207, 232, 265]),
+  downshiftKmh: Object.freeze([0, 40, 70, 99, 128, 154, 178, 201]),
+  engineBraking: Object.freeze([1.8, 1.55, 1.3, 1.1, .9, .7, .55, .4]),
+  shiftDuration: .09,
+  shiftDeceleration: .8,
+  idleRpm: 4000,
+  shiftRpm: 13500,
+  maxRpm: 15000,
 });
 const EPS = 1e-9;
 export class StartSequence {
@@ -44,19 +54,21 @@ export class DriveChallenge {
     Object.assign(this, { phase: 'idle', speed: 0, distance: 0, elapsed: 0,
       throttle: false, braking: false, propulsionCut: false, brakePressure: 0, skidded: false,
       finishCrossed: false, finishAt: null,
+      gear: 1, shiftRemaining: 0, lastShiftAt: -Infinity, lastShiftDirection: null, gearChanges: [],
       skidTime: 0, ms: null, result: null, firstBrakeAt: null,
       firstBrakeDistance: null, initialBrakeSpeed: null, peakPressure: 0,
       outcomeSpeed: 0, history: [], nextSampleAt: 0,
+      inputs: [],
       accelerationHistory: [], nextAccelerationSampleAt: 0 });
   }
   launch(ms) {
     if (!Number.isInteger(ms) || ms < 0 || ms > 10000) throw new Error('无效起步');
     if (this.phase !== 'idle') return false;
-    this.ms = ms; this.phase = 'driving'; this.recordAcceleration(true); return true;
+    this.ms = ms; this.phase = 'driving'; this.recordAcceleration(true); this.recordInputs(); return true;
   }
   setThrottle(pressed) {
     if (this.phase !== 'driving' || this.propulsionCut || this.finishCrossed) return false;
-    this.throttle = !!pressed; this.recordAcceleration(true); return true;
+    this.throttle = !!pressed; this.recordInputs(); this.recordAcceleration(true); return true;
   }
   setBraking(pressed) {
     if (this.phase !== 'driving') return false;
@@ -65,7 +77,12 @@ export class DriveChallenge {
       this.firstBrakeDistance = this.distance; this.initialBrakeSpeed = this.speed;
       this.record(true);
     }
-    this.braking = !!pressed; return true;
+    this.braking = !!pressed; this.recordInputs(); return true;
+  }
+  recordInputs() {
+    const sample = [this.elapsed, this.throttle, this.braking], last = this.inputs.at(-1);
+    if (last && Math.abs(last[0] - sample[0]) < EPS) this.inputs[this.inputs.length - 1] = sample;
+    else if (!last || last[1] !== sample[1] || last[2] !== sample[2]) this.inputs.push(sample);
   }
   crossFinish() {
     if (this.finishCrossed) return;
@@ -73,10 +90,31 @@ export class DriveChallenge {
     this.finishCrossed = true; this.finishAt = this.elapsed;
     this.throttle = false; this.propulsionCut = true;
   }
+  get rpm() {
+    if (this.ms == null || this.phase === 'stopped' || this.phase === 'cancelled') return 0;
+    return Math.max(GEARBOX.idleRpm, Math.min(GEARBOX.maxRpm,
+      this.speed * 3.6 / GEARBOX.upshiftKmh[this.gear - 1] * GEARBOX.shiftRpm));
+  }
+  updateTransmission() {
+    let target = this.gear;
+    while (target < 8 && this.speed >= GEARBOX.upshiftKmh[target - 1] / 3.6 - EPS) target++;
+    while (target > 1 && this.speed <= GEARBOX.downshiftKmh[target - 1] / 3.6 + EPS) target--;
+    if (target === this.gear) return;
+    const from = this.gear;
+    this.gear = target; this.lastShiftAt = this.elapsed;
+    this.lastShiftDirection = target > from ? 'up' : 'down';
+    this.shiftRemaining = target > from ? GEARBOX.shiftDuration : 0;
+    this.gearChanges.push({ time:this.elapsed, from, to:target, speed:this.speed * 3.6 });
+    this.record(true); this.recordAcceleration(true);
+  }
+  tickTransmission(dt) {
+    this.shiftRemaining = Math.max(0, this.shiftRemaining - dt);
+    this.updateTransmission();
+  }
   recordAcceleration(force = false) {
     if (this.ms == null || this.finishCrossed) return;
     const time = this.elapsed;
-    const sample = { time, speed: this.speed * 3.6, throttle: this.throttle ? 100 : 0 };
+    const sample = { time, speed: this.speed * 3.6, throttle: this.throttle ? 100 : 0, gear:this.gear, rpm:this.rpm };
     const last = this.accelerationHistory.at(-1);
     if (last && Math.abs(last.time - time) < EPS) Object.assign(last, sample);
     else if (force || time + EPS >= this.nextAccelerationSampleAt) {
@@ -86,7 +124,7 @@ export class DriveChallenge {
   record(force = false) {
     if (this.firstBrakeAt == null) return;
     const time = this.elapsed - this.firstBrakeAt;
-    const sample = { time, speed: this.speed * 3.6, pressure: this.brakePressure * 100 };
+    const sample = { time, speed: this.speed * 3.6, pressure: this.brakePressure * 100, gear:this.gear, rpm:this.rpm };
     const last = this.history.at(-1);
     if (last && Math.abs(last.time - time) < EPS) Object.assign(last, sample);
     else if (force || time + EPS >= this.nextSampleAt) {
@@ -108,6 +146,11 @@ export class DriveChallenge {
     let remaining = seconds;
     const R = RULES;
     while (remaining > EPS && ['driving', 'skidding'].includes(this.phase)) {
+      this.updateTransmission();
+      const slice = Math.min(remaining, this.shiftRemaining > EPS ? this.shiftRemaining : remaining);
+      const powered = this.throttle && this.shiftRemaining <= EPS;
+      const engineBraking = GEARBOX.engineBraking[this.gear - 1];
+      const downshiftSpeed = this.gear > 1 ? GEARBOX.downshiftKmh[this.gear - 1] / 3.6 : -Infinity;
       const gap = Math.max(0, R.distance + R.roadblockGap - this.distance);
       if (gap <= EPS) { this.finish('collision'); break; }
       const lineGap = this.finishCrossed ? Infinity : Math.max(0, R.distance - this.distance);
@@ -116,19 +159,21 @@ export class DriveChallenge {
         this.brakePressure = this.braking ? Math.min(R.skidPressure, this.brakePressure + R.pressureBaseRate * remaining)
           : Math.max(0, this.brakePressure - R.pressureReleaseRate * remaining);
         this.peakPressure = Math.max(this.peakPressure, this.brakePressure);
-        this.elapsed += remaining; break;
+        this.elapsed += remaining; this.tickTransmission(remaining); break;
       }
-      if (this.phase === 'skidding' || (!this.braking && !this.throttle)) {
-        const deceleration = this.skidded ? R.skidDeceleration : R.coastDeceleration;
+      if (this.phase === 'skidding' || (!this.braking && !powered)) {
+        const deceleration = this.skidded ? R.skidDeceleration : this.throttle
+          ? GEARBOX.shiftDeceleration : R.coastDeceleration + engineBraking;
         const stopTime = this.speed / deceleration;
         const timeTo = distance => distance <= this.speed ** 2 / (2 * deceleration)
           ? 2 * distance / (this.speed + Math.sqrt(Math.max(0, this.speed ** 2 - 2 * deceleration * distance))) : Infinity;
         const collisionTime = timeTo(gap), lineTime = timeTo(lineGap);
-        const dt = Math.min(remaining, stopTime, collisionTime, lineTime);
+        const downshiftTime = (this.speed - downshiftSpeed) / deceleration;
+        const dt = Math.min(slice, stopTime, collisionTime, lineTime, downshiftTime);
         this.distance += this.speed * dt - .5 * deceleration * dt ** 2;
         this.speed = Math.max(0, this.speed - deceleration * dt);
         this.brakePressure = Math.max(0, this.brakePressure - R.pressureReleaseRate * dt);
-        this.elapsed += dt; remaining -= dt;
+        this.elapsed += dt; remaining -= dt; this.tickTransmission(dt);
         if (this.skidded) this.skidTime += dt;
         if (dt >= lineTime - EPS) this.crossFinish();
         if (dt >= collisionTime - EPS) this.finish('collision');
@@ -136,7 +181,7 @@ export class DriveChallenge {
       } else if (this.braking) {
         const coefficient = R.pressureSpeedRate / R.maxSpeed;
         const omega = Math.sqrt(coefficient * R.brakeGain);
-        const brakeBase = R.brakeBase - (this.throttle ? R.acceleration : 0);
+        const brakeBase = R.brakeBase + (this.throttle ? 0 : engineBraking) - (powered ? R.acceleration : 0);
         const shiftedPressure = this.brakePressure + brakeBase / R.brakeGain;
         const initialRate = R.pressureBaseRate + coefficient * this.speed;
         const evaluate = t => {
@@ -154,7 +199,8 @@ export class DriveChallenge {
         const stopTime = solve(this.speed / (brakeBase + R.brakeGain * this.brakePressure), value => value.speed <= 0);
         const lockTime = evaluate(stopTime).pressure >= R.skidPressure
           ? solve(stopTime, value => value.pressure >= R.skidPressure) : Infinity;
-        let dt = Math.min(remaining, stopTime, lockTime);
+        const downshiftTime = this.gear > 1 ? solve(stopTime, value => value.speed <= downshiftSpeed) : Infinity;
+        let dt = Math.min(slice, stopTime, lockTime, downshiftTime);
         const collision = evaluate(dt).distance >= gap - EPS;
         if (collision) dt = solve(dt, value => value.distance >= gap);
         const crossing = evaluate(dt).distance >= lineGap - EPS;
@@ -163,7 +209,7 @@ export class DriveChallenge {
         this.distance += value.distance; this.speed = Math.max(0, value.speed);
         this.brakePressure = Math.min(R.skidPressure, value.pressure);
         this.peakPressure = Math.max(this.peakPressure, this.brakePressure);
-        this.elapsed += dt; remaining -= dt;
+        this.elapsed += dt; remaining -= dt; this.tickTransmission(dt);
         if (crossing) this.crossFinish();
         if (collision && !crossing) this.finish('collision');
         else if (this.speed < EPS) this.finish('valid');
@@ -178,11 +224,12 @@ export class DriveChallenge {
         const timeTo = distance => Number.isFinite(distance)
           ? 2 * distance / (Math.sqrt(this.speed ** 2 + 2 * R.acceleration * distance) + this.speed) : Infinity;
         const collisionTime = timeTo(gap), lineTime = timeTo(lineGap);
-        const dt = Math.min(remaining, toMax, collisionTime, lineTime);
+        const upshiftTime = this.gear < 8 ? (GEARBOX.upshiftKmh[this.gear - 1] / 3.6 - this.speed) / R.acceleration : Infinity;
+        const dt = Math.min(slice, toMax, collisionTime, lineTime, upshiftTime);
         this.distance += this.speed * dt + .5 * R.acceleration * dt ** 2;
         this.speed = Math.min(R.maxSpeed, this.speed + R.acceleration * dt);
         this.brakePressure = Math.max(0, this.brakePressure - R.pressureReleaseRate * dt);
-        this.elapsed += dt; remaining -= dt;
+        this.elapsed += dt; remaining -= dt; this.tickTransmission(dt);
         if (dt >= lineTime - EPS) this.crossFinish();
         if (dt >= collisionTime - EPS) this.finish('collision');
       }
@@ -213,6 +260,7 @@ export class DriveChallenge {
       brakeDistance: this.firstBrakeDistance == null ? null : this.distance - this.firstBrakeDistance,
       peakPressure: this.firstBrakeAt == null ? null : this.peakPressure * 100,
       outcomeSpeed: this.outcomeSpeed, history: this.history.map(sample => ({ ...sample })),
+      gearChanges: this.gearChanges.map(shift => ({ ...shift })),
       accelerationHistory: this.accelerationHistory.map(sample => ({ ...sample })) };
   }
   cancel() {
@@ -223,7 +271,7 @@ export class DriveChallenge {
   }
 }
 
-export const STORAGE_KEY = 'lights-out-250-roadblock-leaderboard-v9';
+export const STORAGE_KEY = 'lights-out-250-geared-leaderboard-v10';
 export const overallScore = entry => !validResult(entry) || (entry.type != null && entry.type !== 'valid') ? 0
   : 50 / (1 + entry.distanceCm / 500) + 30 / (1 + entry.finishMs / 20000) + 20 / (1 + entry.ms / 300);
 const compare = (a, b) => (overallScore(b) ?? -1) - (overallScore(a) ?? -1)
@@ -237,7 +285,7 @@ export function rankLeaderboard(entries, metric) {
   const direction = metric === 'score' ? -1 : 1;
   const ordered = [...entries].sort((a, b) => direction * (value(a) - value(b)) || a.at - b.at || a.id.localeCompare(b.id));
   const drivers = new Set(), best = ordered.filter(entry => {
-    const name = entry.name.trim().normalize('NFKC').toLowerCase();
+    const name = entry.playerId || entry.name.trim().normalize('NFKC').toLowerCase();
     if (drivers.has(name)) return false;
     drivers.add(name); return true;
   });

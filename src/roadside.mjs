@@ -1,15 +1,17 @@
 import * as THREE from 'three';
+import { RULES } from './core.mjs';
 
 // A small moving pool of optimized, downloaded photogrammetry meshes.
 // Distant Kenney instances are restored as the detailed section moves on.
 export function createRoadsideDetails(scene, assets, proxyBatches, mobile) {
   const pools = [], segments = { barrier: [], fence: [] };
   const transform = new THREE.Object3D();
-  for (let i = 0; i < 330; i++) {
+  const sceneryLength = RULES.distance + RULES.roadblockGap + 220;
+  for (let i = 0; i < Math.ceil(sceneryLength / 4.5); i++) {
     for (const side of [-1, 1]) segments.barrier.push({ x:side * 8.4, y:.36, z:18 - i * 4.5, color:i % 2 ? 'red' : 'white' });
   }
   // Eight straight modules fill each 22 m section, without stretching diamonds.
-  for (let section = 0; section < 64; section++) {
+  for (let section = 0; section < Math.ceil(sceneryLength / 22); section++) {
     for (let i = 0; i < 8; i++) {
       for (const side of [-1, 1]) segments.fence.push({ x:side * 9.05, y:.36, z:14 - section * 22 - 11 + (i + .5) * 2.75 });
     }
@@ -61,5 +63,8 @@ export function createRoadsideDetails(scene, assets, proxyBatches, mobile) {
       batch.mesh.count = count; batch.mesh.instanceMatrix.needsUpdate = true; batch.mesh.computeBoundingSphere();
     }
   }
-  return { update, diagnostics:() => ({ detailedBarriers:pools.filter(p=>p.kind==='barrier').reduce((n,p)=>n+p.meshes[0].count,0) }) };
+  return { update, diagnostics:() => ({
+    detailedBarriers:pools.filter(p=>p.kind==='barrier').reduce((n,p)=>n+p.meshes[0].count,0),
+    detailedFences:pools.find(p=>p.kind==='fence').meshes[0].count,
+  }) };
 }

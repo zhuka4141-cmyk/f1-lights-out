@@ -412,24 +412,26 @@ export async function createScene(container) {
   const collisionFX = createCollisionEffects(scene, roadblockRow, mobile, reducedMotion);
 
   // Paint the finish band on a thin copy of the downloaded Kenney road surface.
-  // The three alternating rows follow real circuit paint; no new mesh is built.
-  const finishPaint = document.createElement('canvas'); finishPaint.width = 2048; finishPaint.height = 192;
-  const paint = finishPaint.getContext('2d'), cell = 64;
-  for (let row = 0; row < 3; row++) {
-    for (let column = 0; column < 32; column++) {
-      paint.fillStyle = (column + row) % 2 ? '#202323' : '#e5e4dc';
-      paint.fillRect(column * cell, row * cell, cell, cell);
+  // Broad painted squares remain visible at speed and use the existing road mesh.
+  const finishWidth = 4.5, rows = 6, columns = 24;
+  const finishPaint = document.createElement('canvas'); finishPaint.width = 2048; finishPaint.height = 512;
+  const paint = finishPaint.getContext('2d');
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < columns; column++) {
+      paint.fillStyle = (column + row) % 2 ? '#0c0c0c' : '#ffffff';
+      paint.fillRect(column * finishPaint.width / columns, row * finishPaint.height / rows,
+        Math.ceil(finishPaint.width / columns), Math.ceil(finishPaint.height / rows));
     }
   }
   const finishTexture = new THREE.CanvasTexture(finishPaint); finishTexture.colorSpace = THREE.SRGBColorSpace;
   finishTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   const finishNormal = asphaltNormal.clone(), finishRough = asphaltRough.clone();
-  finishNormal.repeat.set(18 / 8, 1.5 / 8); finishRough.repeat.copy(finishNormal.repeat);
+  finishNormal.repeat.set(18 / 8, finishWidth / 8); finishRough.repeat.copy(finishNormal.repeat);
   const finishMaterial = new THREE.MeshStandardMaterial({ map: finishTexture, roughness: 1,
     roughnessMap: finishRough, normalMap: finishNormal, normalScale: new THREE.Vector2(.16, .16),
     metalness: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
   // The edge nearest the arriving car is the shared 1250 m measuring plane.
-  const finishLine = place('roadStraightLong', 0, .361, finishZ - .75, [18, .02, .75], 0, scene);
+  const finishLine = place('roadStraightLong', 0, .361, finishZ - finishWidth / 2, [18, .02, finishWidth / 2], 0, scene);
   finishLine.updateMatrixWorld(true);
   finishLine.traverse(mesh => {
     if (!mesh.isMesh) return;
@@ -439,7 +441,7 @@ export async function createScene(container) {
     const p = mesh.geometry.attributes.position, uv = new Float32Array(p.count * 2), v = new THREE.Vector3();
     for (let i = 0; i < p.count; i++) {
       v.fromBufferAttribute(p, i).applyMatrix4(mesh.matrixWorld);
-      uv[i * 2] = (v.x + 9) / 18; uv[i * 2 + 1] = (finishZ - v.z) / 1.5;
+      uv[i * 2] = (v.x + 9) / 18; uv[i * 2 + 1] = (finishZ - v.z) / finishWidth;
     }
     mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     mesh.material = finishMaterial; mesh.castShadow = false; mesh.receiveShadow = true;

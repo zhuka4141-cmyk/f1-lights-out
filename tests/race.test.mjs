@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DriveChallenge, RULES, StartSequence, LocalLeaderboard, STORAGE_KEY, overallScore, rankLeaderboard, isScoringResult } from '../src/core.mjs';
+import { DriveChallenge, RULES, GEARBOX, StartSequence, LocalLeaderboard, STORAGE_KEY, overallScore, rankLeaderboard, isScoringResult } from '../src/core.mjs';
 const near = (a, b, tolerance = 1e-7) => assert.ok(Math.abs(a - b) < tolerance, `${a} != ${b}`);
 const drive = () => { const d = new DriveChallenge(); d.launch(213); return d; };
 const advance = (d, seconds, dt = .05) => {
@@ -16,11 +16,11 @@ const crossLine = () => {
   }
   assert.equal(d.finishCrossed, true); assert.equal(d.result, null); return d;
 };
-const stop = (d, coast = 6.98, dt = .05) => {
+const stop = (d, coast = 7.55, dt = .05) => {
   advance(d, coast, dt); d.setBraking(true); advance(d, 1, dt);
   d.setBraking(false); advance(d, .5, dt); d.setBraking(true); advance(d, 20, dt); return d;
 };
-const successfulRun = (coast = 6.98) => stop(crossLine(), coast);
+const successfulRun = (coast = 7.55) => stop(crossLine(), coast);
 const adapter = (storage = new Map()) => ({ getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) });
 
 test('1250 m finish and 1750 m obstacle with a 250 km/h ceiling', () => {
@@ -28,20 +28,51 @@ test('1250 m finish and 1750 m obstacle with a 250 km/h ceiling', () => {
 });
 test('manual throttle is required and releasing it coasts, with no automatic acceleration', () => {
   const d = drive(); d.step(2); near(d.speed, 0); near(d.distance, 0); assert.equal(d.result, null);
-  d.setThrottle(true); d.step(4); near(d.speed, 40); d.setThrottle(false); d.step(1); near(d.speed, 37.8);
-  d.setThrottle(true); d.step(.1); near(d.speed, 38.8);
+  d.setThrottle(true); d.step(1); near(d.speed, 10); d.setThrottle(false); d.step(1); near(d.speed, 6);
+  d.setThrottle(true); d.step(.1); near(d.speed, 7);
 });
 test('250 is safe but further throttle blows the engine across frame rates', () => {
-  const d = drive(); d.setThrottle(true); d.step(RULES.maxSpeed / RULES.acceleration);
+  const toMax = RULES.maxSpeed / RULES.acceleration + 7 * GEARBOX.shiftDuration * (1 + GEARBOX.shiftDeceleration / RULES.acceleration);
+  const d = drive(); d.setThrottle(true); d.step(toMax);
   near(d.speed * 3.6, 250); assert.equal(d.result, null); d.setThrottle(false); d.step(.1); assert.equal(d.result, null);
+  const baseline = drive(); baseline.setThrottle(true); baseline.step(10);
   for (const dt of [1 / 30, 1 / 60, 1 / 144, .8, 30]) {
     const run = drive(); run.setThrottle(true); advance(run, 10, dt);
     assert.equal(run.result.type, 'engine-blown'); near(run.result.stats.outcomeSpeed, 250);
-    near(run.distance, RULES.maxSpeed ** 2 / (2 * RULES.acceleration));
-    near(run.elapsed, RULES.maxSpeed / RULES.acceleration); assert.equal(run.result.finishMs, null);
+    near(run.distance, baseline.distance); near(run.elapsed, toMax); assert.equal(run.result.finishMs, null);
+    assert.deepEqual(run.gearChanges.map(shift => shift.to), [2, 3, 4, 5, 6, 7, 8]);
+    run.gearChanges.forEach((shift, i) => near(shift.speed, GEARBOX.upshiftKmh[i]));
     assert.equal(overallScore(run.result), 0);
   }
 });
+test('upshifts cut torque briefly, reduce road speed and drop actual engine rpm', () => {
+  const d = drive(); d.setThrottle(true); d.step(1.5);
+  assert.equal(d.gear, 2); near(d.speed * 3.6, 54); near(d.shiftRemaining, .09);
+  assert.ok(d.rpm < 9000); assert.ok(d.rpm > GEARBOX.idleRpm);
+  d.step(.045); near(d.speed, 15 - .8 * .045); assert.equal(d.gear, 2);
+  d.step(.045); near(d.shiftRemaining, 0); const speed = d.speed;
+  d.step(.1); near(d.speed, speed + 1); assert.equal(d.throttle, true);
+});
+
+test('automatic downshifts increase engine braking, raise rpm and reach first gear at a stop', () => {
+  for (const dt of [1 / 30, 1 / 144, .8, 100]) {
+    const d = drive(); d.gear = 8; d.speed = 240 / 3.6;
+    advance(d, 39 / 3.6 / 2.6, dt);
+    assert.equal(d.gear, 7); near(d.speed * 3.6, 201);
+    assert.equal(d.lastShiftDirection, 'down');
+    assert.ok(d.rpm > d.speed * 3.6 / GEARBOX.upshiftKmh[7] * GEARBOX.shiftRpm);
+    d.step(.1); near(d.speed, 201 / 3.6 - 2.75 * .1);
+    advance(d, 100, dt); near(d.speed, 0); assert.equal(d.gear, 1); assert.equal(d.result, null);
+    assert.deepEqual(d.gearChanges.map(shift => shift.to), [7, 6, 5, 4, 3, 2, 1]);
+  }
+});
+
+test('shift thresholds prevent gear hunting when the throttle is released and reapplied', () => {
+  const d = drive(); d.setThrottle(true); d.step(1.5); d.setThrottle(false); d.step(.2);
+  assert.equal(d.gear, 2); d.setThrottle(true); d.step(.15);
+  assert.equal(d.gear, 2); assert.equal(d.gearChanges.length, 1);
+});
+
 test('stopping before the line keeps the race running and permits another launch', () => {
   for (const brake of [false, true]) {
     const d = drive(); d.setThrottle(true); d.step(.1); d.setThrottle(false); if (brake) d.setBraking(true); d.step(2);
@@ -74,14 +105,15 @@ test('stopping just before the line does not record a time until the car crosses
 test('crossing records its own instant and permanently cuts throttle', () => {
   const d = crossLine(); assert.ok(d.finishAt > 18); assert.ok(d.distance > 1250);
   assert.equal(d.throttle, false); assert.equal(d.propulsionCut, true); assert.equal(d.setThrottle(true), false);
-  const finish = d.finishAt, speed = d.speed; d.step(1); near(d.speed, speed - RULES.coastDeceleration); near(d.finishAt, finish);
+  const finish = d.finishAt, speed = d.speed, deceleration = RULES.coastDeceleration + GEARBOX.engineBraking[d.gear - 1];
+  d.step(1); near(d.speed, speed - deceleration); near(d.finishAt, finish);
 });
 test('crossing is solved within acceleration, coasting and braking slices', () => {
-  const a = drive(); a.distance = 1249; a.speed = 30; a.setThrottle(true); a.step(.1);
+  const a = drive(); a.distance = 1249; a.speed = 30; a.gear = 3; a.setThrottle(true); a.step(.1);
   near(a.finishAt, 2 / (Math.sqrt(920) + 30)); assert.equal(a.throttle, false);
-  const c = drive(); c.distance = 1249; c.speed = 30; c.step(.1);
-  near(c.finishAt, 2 / (30 + Math.sqrt(900 - 2 * RULES.coastDeceleration)));
-  const b = drive(); b.distance = 1249; b.speed = 30; b.setBraking(true); b.step(.1);
+  const c = drive(); c.distance = 1249; c.speed = 30; c.gear = 3; c.step(.1);
+  near(c.finishAt, 2 / (30 + Math.sqrt(900 - 2 * (RULES.coastDeceleration + GEARBOX.engineBraking[2]))));
+  const b = drive(); b.distance = 1249; b.speed = 30; b.gear = 3; b.setBraking(true); b.step(.1);
   assert.equal(b.finishCrossed, true); assert.ok(b.finishAt > 1 / 30 && b.finishAt < .04);
 });
 test('pulsed braking can stop less than one metre before the roadblock', () => {
@@ -109,7 +141,8 @@ test('independent throttle and brake work together and releasing one preserves t
   d.setBraking(false); const speed = d.speed, pressure = d.brakePressure; d.step(.1);
   near(d.speed, speed + RULES.acceleration * .1); assert.ok(d.brakePressure < pressure);
   d.setBraking(true); d.setThrottle(false); assert.equal(d.braking, true); assert.equal(d.throttle, false);
-  d.setBraking(false); const coastingSpeed = d.speed; d.step(.1); near(d.speed, coastingSpeed - RULES.coastDeceleration * .1);
+  d.setBraking(false); const coastingSpeed = d.speed, deceleration = RULES.coastDeceleration + GEARBOX.engineBraking[d.gear - 1];
+  d.step(.1); near(d.speed, coastingSpeed - deceleration * .1);
 });
 test('holding both pedals before moving keeps the car still and releasing the brake launches it', () => {
   const d = drive(); d.setThrottle(true); d.setBraking(true); d.step(2);
@@ -141,7 +174,7 @@ test('acceleration telemetry records speed and pedal changes and ends at the exa
 });
 test('pressure rises promptly and only locks at 115 percent, not 100 percent', () => {
   const d = drive(); d.setThrottle(true); d.step(6.8); d.setThrottle(false); d.setBraking(true); d.step(1);
-  assert.ok(d.brakePressure > .78 && d.brakePressure < .82); assert.equal(d.skidded, false);
+  assert.ok(d.brakePressure > .95 && d.brakePressure < .99); assert.equal(d.skidded, false);
   while (d.brakePressure < 1.01 && d.phase === 'driving') d.step(.001);
   assert.equal(d.skidded, false); assert.ok(d.brakePressure > 1); d.step(20);
   assert.equal(d.result.type, 'skid'); near(d.peakPressure, 1.15);
@@ -156,20 +189,20 @@ test('the car cannot tunnel through the obstacle during low frame rates or long 
   }
 });
 test('collision telemetry retains the actual impact speed', () => {
-  const d = crossLine(); d.step(7.8); d.setBraking(true); d.step(10);
+  const d = crossLine(); d.step(8.3); d.setBraking(true); d.step(10);
   assert.equal(d.result.type, 'collision'); assert.ok(d.result.stats.outcomeSpeed > 0);
   near(d.history.at(-1).speed, d.result.stats.outcomeSpeed);
 });
 test('identical brake inputs remain stable across render rates', () => {
   const baseline = successfulRun();
   for (const dt of [1 / 30, 1 / 144, .7, 25]) {
-    const d = stop(crossLine(), 6.98, dt); assert.equal(d.result.type, baseline.result.type);
+    const d = stop(crossLine(), 7.55, dt); assert.equal(d.result.type, baseline.result.type);
     near(d.distance, baseline.distance, 1e-6); near(d.elapsed, baseline.elapsed, 1e-6);
     assert.equal(d.result.finishMs, baseline.result.finishMs); near(d.peakPressure, baseline.peakPressure);
   }
 });
 test('a centimetre-rounded stop just before the obstacle saves but failures never do', () => {
-  let low = 6.98, high = 7.1;
+  let low = 7.55, high = 7.7;
   for (let i = 0; i < 40; i++) { const mid = (low + high) / 2; if (successfulRun(mid).distance < 1749.999) low = mid; else high = mid; }
   const d = successfulRun(low); assert.equal(d.result.type, 'valid'); assert.equal(d.result.offsetCm, 0);
   const board = new LocalLeaderboard(adapter()); board.offer(d.result); board.agree(); board.save('极限');
@@ -181,11 +214,12 @@ test('a centimetre-rounded stop just before the obstacle saves but failures neve
   assert.equal(isScoringResult({ ...d.result, offsetCm: -50001, distanceCm: 50001 }), false);
 });
 test('consented records survive reload and old rules remain in separate storage', () => {
-  const storage = new Map([['lights-out-250-finish-line-leaderboard-v8', 'legacy']]), store = adapter(storage);
+  const storage = new Map([['lights-out-250-finish-line-leaderboard-v8', 'legacy'], ['lights-out-250-roadblock-leaderboard-v9', 'manual-legacy']]), store = adapter(storage);
   const board = new LocalLeaderboard(store), result = successfulRun().result; board.offer(result);
   assert.throws(() => board.save('车手'), /同意/); board.agree(); assert.throws(() => board.save('   '), /名字/);
   const entry = board.save('<b>车手</b>', 1000); assert.equal(entry.finishMs, result.finishMs);
   assert.equal(storage.get('lights-out-250-finish-line-leaderboard-v8'), 'legacy');
+  assert.equal(storage.get('lights-out-250-roadblock-leaderboard-v9'), 'manual-legacy');
   assert.deepEqual(new LocalLeaderboard(store).entries, [entry]); assert.throws(() => board.save('重复'), /已经/);
   for (const m of ['distanceCm', 'ms', 'finishMs', 'score']) assert.equal(rankLeaderboard([entry], m)[0].rank, 1);
   storage.set(STORAGE_KEY, JSON.stringify([entry, { ...entry, id: 'invalid', finishMs: null }]));
@@ -216,5 +250,6 @@ test('start inputs still reject false starts and time out after ten seconds', ()
 test('restart clears throttle, finish state, pressure and telemetry', () => {
   const d = successfulRun(); d.reset(); assert.equal(d.propulsionCut, false); assert.equal(d.throttle, false);
   assert.equal(d.finishCrossed, false); assert.equal(d.finishAt, null); assert.equal(d.firstBrakeAt, null);
+  assert.equal(d.gear, 1); assert.equal(d.rpm, 0); assert.equal(d.shiftRemaining, 0); assert.deepEqual(d.gearChanges, []);
   assert.deepEqual(d.history, []); assert.equal(d.result, null); d.launch(100); d.step(1); near(d.speed, 0);
 });

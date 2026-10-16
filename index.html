@@ -24,7 +24,7 @@
       <p class="start-note">左刹车 · 右油门，可同时踩；超过 250 爆缸<br>冲过终点线，再贴近 500 米外路障停稳</p>
     </section>
     <section class="live-reaction" id="liveReaction" hidden aria-label="行驶数据"><span id="liveLabel">距终点线</span><div><strong id="liveTime">1250.00</strong><small>m</small></div><p id="liveSecondary"></p></section>
-    <section class="telemetry" aria-label="赛车仪表"><div class="rpm-strip" id="rpmStrip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="dash-data"><div class="gear"><strong id="gear">N</strong><span>GEAR</span></div><div class="speed"><strong id="speed">000</strong><span>km/h</span></div><div class="input-data"><strong id="inputValue">0<small>%</small></strong><span id="inputLabel">THROTTLE</span></div></div></section>
+    <section class="telemetry" aria-label="赛车仪表"><div class="rpm-strip" id="rpmStrip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="dash-data"><div class="gear"><strong id="gear">N</strong><span id="gearAction">GEAR</span></div><div class="speed"><strong id="speed">000</strong><span>km/h</span></div><div class="input-data"><strong id="inputValue">0.0<small>K</small></strong><span id="inputLabel">RPM</span></div></div></section>
     <div class="pedal-area brake-area">
       <div class="pedal-wrap"><button id="brakeButton" class="throttle-button brake-mode" disabled aria-label="按住刹车" aria-describedby="brakePedalHint" aria-pressed="false"><span class="pedal-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong>刹车</strong><span>BRAKE</span><kbd>S</kbd></button><span class="pedal-hint" id="brakePedalHint">可与油门同时踩</span></div>
       <div class="brake-pressure" id="brakeGauge" hidden role="meter" aria-label="刹车压力，115% 时锁死打滑" aria-valuemin="0" aria-valuemax="115" aria-valuenow="0"><div class="pressure-heading"><span>刹车压力</span><strong id="pressureValue">0%</strong></div><div class="pressure-track"><i id="pressureFill"></i><span class="rated-line" title="100% 额定压力"></span><span class="limit-line"></span><small>115%<br>打滑线</small></div><p id="pressureHint">可分段刹车</p></div>
@@ -44,7 +44,7 @@
       <div class="chart-panel acceleration-chart"><div class="chart-heading"><strong>加速过程</strong><div class="chart-legend"><span class="speed-key">车速 km/h</span></div></div><div id="accelerationChart"></div><p class="chart-note">起步至冲线 · 白色为车速</p></div>
       <div class="chart-panel"><div class="chart-heading"><strong>制动过程</strong><div class="chart-legend"><span class="speed-key">车速 km/h</span><span class="pressure-key">压力 %</span></div></div><div id="brakeChart"></div><p class="chart-note" id="chartNote">从第一次刹车开始，含松开滑行时间；红虚线为 115% 打滑线。</p></div>
       <div class="session-score"><span>本轮综合得分</span><strong id="sessionScore">0</strong><small>距离 50% · 冲线时间 30% · 起步反应 20%</small></div>
-      <div class="score-consent" id="scoreConsent" hidden><p>记录这次冲线与刹停成绩？</p><div class="choice-buttons"><button class="secondary-button" id="saveYes">记录成绩</button><button class="text-button" id="saveNo">这次不记录</button></div><small>仅保存到本设备，不会上传姓名与成绩。</small></div>
+      <div class="score-consent" id="scoreConsent" hidden><p>把这次成绩加入在线排行榜？</p><div class="choice-buttons"><button class="secondary-button" id="saveYes">记录成绩</button><button class="text-button" id="saveNo">这次不记录</button></div><small>提交后，昵称与成绩会公开显示。</small></div>
       <form id="scoreForm" hidden novalidate><label for="driverName">车手名字</label><div class="name-entry"><input id="driverName" name="driverName" type="text" autocomplete="off" maxlength="40" placeholder="输入名字，最多 20 个字" aria-describedby="saveFeedback"><button class="secondary-button" type="submit">提交上榜</button></div><button class="text-button" id="cancelSave" type="button">暂不记录</button></form>
       <p id="saveFeedback" class="save-feedback" role="status" hidden></p>
       <div class="result-actions"><button class="primary-button retry" id="retryButton">再挑战一次 <span aria-hidden="true">↻</span></button><button class="text-button" id="resultHomeButton">返回主页</button></div>
@@ -52,8 +52,8 @@
     </section>
     <dialog id="leaderboardDialog" aria-labelledby="leaderboardTitle">
       <button class="dialog-close" id="closeLeaderboard" aria-label="关闭排行榜">×</button>
-      <p class="eyebrow">LOCAL LEADERBOARD</p><h2 id="leaderboardTitle">1250 米挑战榜</h2>
-      <p class="board-scoring">四项独立排名</p>
+      <p class="eyebrow">ONLINE LEADERBOARD</p><h2 id="leaderboardTitle">1250 米挑战榜</h2>
+      <div class="board-sync"><p class="board-scoring" id="boardStatus" role="status">所有玩家共享</p><button class="text-button" id="refreshLeaderboard" type="button">刷新</button></div>
       <p class="board-empty" id="boardEmpty">冲过终点线并在路障前停稳后，即可记录上榜。</p>
       <div class="leaderboard-grid" id="boardTable" hidden>
         <section class="ranking-board" aria-labelledby="distanceRankTitle">

@@ -1,4 +1,5 @@
-import { RULES, StartSequence, DriveChallenge, LocalLeaderboard, rankLeaderboard, isScoringResult } from './core.mjs';
+import { RULES, GEARBOX, StartSequence, DriveChallenge, rankLeaderboard, isScoringResult } from './core.mjs';
+import { OnlineLeaderboard } from './online.mjs';
 import { createScene } from './scene.mjs';
 import { renderReport } from './report.mjs';
 import { renderLeaderboard } from './leaderboard.mjs';
@@ -12,14 +13,14 @@ const $ = id => {
 const text = (id, value) => { const node = $(id), next = String(value); if (node.textContent !== next) node.textContent = next; };
 const attribute = (id, name, value) => { const node = $(id), next = String(value); if (node.getAttribute(name) !== next) node.setAttribute(name,next); };
 const sequence = new StartSequence(), drive = new DriveChallenge();
-const board = new LocalLeaderboard({ getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) });
+const board = new OnlineLeaderboard();
 const held = { throttle: new Set(), brake: new Set() }, keysHeld = new Set();
 const clearHeld = () => {
   held.throttle.clear(); held.brake.clear(); keysHeld.clear();
   attribute('throttleButton', 'aria-pressed', false); attribute('brakeButton', 'aria-pressed', false);
 };
 const pedalKeys = new Map([['KeyW', 'throttle'], ['KeyS', 'brake'], ['Space', 'throttle'], ['ArrowRight', 'throttle'], ['ArrowLeft', 'brake']]);
-let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null;
+let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null, submittingScore = false;
 const activeDrive = () => ['driving', 'skidding'].includes(drive.phase);
 function fitReport() {
   const panel = $('resultPanel'); if (panel.hidden) return;
@@ -36,8 +37,10 @@ function resetConsent() {
   $('scoreForm').reset(); $('driverName').removeAttribute('aria-invalid'); $('saveFeedback').classList.remove('error');
 }
 function begin() {
+  if (submittingScore) return;
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
   clearHeld(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
+  board.startRun();
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
   $('liveReaction').hidden = $('brakeGauge').hidden = true;
@@ -51,7 +54,7 @@ function showResult(result) {
   if (!result || resultShown) return;
   resultShown = true; clearHeld();
   $('leaderboardButton').disabled = false;
-  resetConsent(); renderReport(result); board.offer(result);
+  resetConsent(); renderReport(result); board.offer(result, drive);
   $('scoreConsent').hidden = !isScoringResult(result);
   $('introPanel').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('resultPanel').hidden = $('resultScrim').hidden = false;
@@ -93,6 +96,7 @@ function cancel() {
   if (result) { world?.setLights(0); showResult(result); }
 }
 function home(event) {
+  if (submittingScore) return;
   event?.preventDefault(); if (!world) return;
   clearHeld(); resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
@@ -106,13 +110,25 @@ function home(event) {
 function renderBoard() {
   renderLeaderboard(board.entries, selectedId);
 }
-function openBoard() { cancel(); renderBoard(); $('leaderboardDialog').showModal(); }
+let boardLoading = false;
+async function refreshBoard() {
+  if (boardLoading) return;
+  boardLoading = true; $('refreshLeaderboard').disabled = true;
+  $('boardStatus').textContent = '正在同步…'; $('boardStatus').classList.remove('error');
+  try { await board.load(); renderBoard(); $('boardStatus').textContent = '所有玩家共享'; }
+  catch (error) { $('boardStatus').textContent = error.message; $('boardStatus').classList.add('error'); }
+  finally { boardLoading = false; $('refreshLeaderboard').disabled = false; }
+}
+function openBoard() { cancel(); renderBoard(); $('leaderboardDialog').showModal(); refreshBoard(); }
+setInterval(() => { if ($('leaderboardDialog').open && !document.hidden) refreshBoard(); }, 15000);
 function skipSave() {
+  if (submittingScore) return;
   resetConsent(); $('saveFeedback').hidden = false; $('saveFeedback').textContent = '这次成绩未记录。'; $('retryButton').focus({ preventScroll: true });
 }
 $('startButton').addEventListener('click', begin); $('retryButton').addEventListener('click', begin);
 $('resultHomeButton').addEventListener('click', home);
 $('leaderboardButton').addEventListener('click', openBoard);
+$('refreshLeaderboard').addEventListener('click', refreshBoard);
 $('closeLeaderboard').addEventListener('click', () => $('leaderboardDialog').close());
 $('leaderboardDialog').addEventListener('click', event => {
   if (event.target !== $('leaderboardDialog')) return;
@@ -158,23 +174,32 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) cance
 $('saveYes').addEventListener('click', () => { board.agree(); $('scoreConsent').hidden = true; $('scoreForm').hidden = false; $('driverName').focus({ preventScroll: true }); });
 $('saveNo').addEventListener('click', skipSave); $('cancelSave').addEventListener('click', skipSave);
 $('driverName').addEventListener('input', () => { $('driverName').removeAttribute('aria-invalid'); $('saveFeedback').hidden = true; });
-$('scoreForm').addEventListener('submit', event => {
+$('scoreForm').addEventListener('submit', async event => {
   event.preventDefault();
+  const submit = $('scoreForm').querySelector('[type="submit"]');
+  if (submit.disabled) return;
+  submittingScore = true; submit.disabled = true; submit.textContent = '提交中…';
+  $('cancelSave').disabled = $('driverName').disabled = true;
+  $('retryButton').disabled = $('resultHomeButton').disabled = true;
   try {
-    const entry = board.save($('driverName').value); selectedId = entry.id;
+    const entry = await board.save($('driverName').value); selectedId = entry.id;
     $('scoreForm').hidden = true; $('saveFeedback').hidden = false; $('saveFeedback').classList.remove('error');
-    const driverKey = name => name.trim().normalize('NFKC').toLowerCase();
     const ranks = [['distanceCm', '距离'], ['ms', '反应'], ['finishMs', '冲线'], ['score', '综合得分']].map(([metric, label]) => {
-      const best = rankLeaderboard(board.entries, metric).find(item => driverKey(item.name) === driverKey(entry.name));
+      const best = rankLeaderboard(board.entries, metric).find(item => item.playerId === entry.playerId);
       return `${label}第 ${best.rank} 名`;
     });
-    $('saveFeedback').textContent = `${entry.name}，成绩已记录 · ${ranks.join(' · ')}`;
+    $('saveFeedback').textContent = `${entry.name}，已上在线榜 · ${ranks.join(' · ')}`;
+    $('boardStatus').textContent = '所有玩家共享';
     renderBoard(); $('leaderboardDialog').showModal();
   } catch (error) {
     const nameError = error.message.includes('名字');
     $('saveFeedback').hidden = false; $('saveFeedback').classList.add('error');
-    $('saveFeedback').textContent = nameError ? error.message : '本设备暂时无法保存，请检查浏览器存储设置后再试。';
+    $('saveFeedback').textContent = error.message;
     $('driverName').setAttribute('aria-invalid', String(nameError)); $('driverName').focus({ preventScroll: true });
+  } finally {
+    submittingScore = false; $('cancelSave').disabled = $('driverName').disabled = false;
+    submit.disabled = false; submit.textContent = '提交上榜';
+    $('retryButton').disabled = $('resultHomeButton').disabled = false;
   }
 });
 const rpm = [...$('rpmStrip').children];
@@ -216,12 +241,15 @@ function frame(now) {
     $('brakeGauge').classList.toggle('danger', pressure >= 100);
     text('pressureHint', pressure >= 100 ? '接近 115%！松开卸压' : '可分段刹车');
     const speed = Math.round(drive.speed * 3.6), driving = drive.phase === 'driving';
-    text('speed', String(speed).padStart(3, '0')); text('gear', speed < 1 ? 'N' : Math.min(8, 1 + Math.floor(speed / 40)));
-    const input = driving ? drive.braking ? Math.round(pressure) : drive.throttle ? 100 : 0 : 0;
-    if ($('inputValue').firstChild.textContent !== String(input)) $('inputValue').firstChild.textContent = input;
-    text('inputLabel', driving && drive.braking ? drive.throttle ? 'BRAKE + THR' : 'BRAKE' : drive.propulsionCut ? 'POWER OFF' : 'THROTTLE');
+    text('speed', String(speed).padStart(3, '0')); text('gear', activeDrive() ? drive.gear : 'N');
+    const recentShift = activeDrive() && drive.elapsed - drive.lastShiftAt < .5;
+    $('gear').classList.toggle('shifting', recentShift);
+    text('gearAction', recentShift ? drive.lastShiftDirection === 'up' ? '升挡' : '降挡' : 'GEAR');
+    const rpmValue = (drive.rpm / 1000).toFixed(1);
+    if ($('inputValue').firstChild.textContent !== rpmValue) $('inputValue').firstChild.textContent = rpmValue;
+    text('inputLabel', 'RPM');
     $('speed').classList.toggle('overspeed-warning', driving && speed >= 240);
-    const bars = driving ? drive.braking ? Math.ceil(pressure / 115 * 12) : Math.min(12, 3 + speed / 30) : ['sequence', 'waiting'].includes(phase) ? 3 : 0;
+    const bars = activeDrive() ? Math.ceil(drive.rpm / GEARBOX.maxRpm * 12) : ['sequence', 'waiting'].includes(phase) ? 3 : 0;
     rpm.forEach((element, i) => element.classList.toggle('active', i < bars));
     world.render(now, drive);
   }
