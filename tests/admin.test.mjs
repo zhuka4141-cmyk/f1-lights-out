@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createBlobStore, storeForVersion } from '../server/store.mjs';
+import { createBlobStore } from '../server/store.mjs';
 import { createAdminHandlers } from '../server/admin-handlers.mjs';
 import { hashPassword, verifyPassword, issueAdminSession, authenticated } from '../server/admin-auth.mjs';
 import { editableValues, validateValues } from '../server/moderation.mjs';
@@ -112,31 +112,27 @@ test('admin rejects invalid metrics, forged player identities, missing records a
   assert.equal((await store.entries()).length, 1);
 });
 
-test('historical 500 m results remain manageable without entering the current 250 m leaderboard', async () => {
-  const client = blobMemory(), legacy = createBlobStore('geared-v10', client), current = createBlobStore('sprint250-v11', client);
+test('score management only accepts the current 250 m braking distance', async () => {
+  const { store } = service(); await store.save(first);
   const far = { ...first, distanceCm: 35000, offsetCm: -35000 };
-  await legacy.save(far); await current.save(second);
-  assert.equal((await legacy.allEntries()).entries[0].distanceCm, 35000);
-  const edited = await legacy.moderate({ id: first.id, revision: 0, action: 'edit', values: { ...editableValues(far), name: '历史车手' } });
-  assert.ok(edited.score > 0); assert.equal(edited.score, Math.round(overallScore(edited, 500) * 100) / 100);
-  assert.equal((await createBlobStore('geared-v10', client).entries())[0].name, '历史车手');
-  assert.deepEqual((await current.allEntries()).entries.map(entry => entry.id), [second.id]);
   assert.throws(() => validateValues(editableValues(far)), /250/);
-  assert.throws(() => storeForVersion('../geared-v10'), /赛制/);
+  await assert.rejects(store.moderate({ id: first.id, revision: 0, action: 'edit', values: editableValues(far) }), /250/);
+  assert.equal((await store.allEntries()).entries[0].distanceCm, first.distanceCm);
 });
 
-test('admin rule selection routes edits and reads to the same isolated board', async () => {
-  const client = blobMemory(), current = createBlobStore('sprint250-v11', client), legacy = createBlobStore('geared-v10', client);
-  await current.save(first); await legacy.save(second);
-  const handlers = createAdminHandlers({ store: current, resolveStore: version => {
-    if (version === 'sprint250-v11') return current;
-    if (version === 'geared-v10') return legacy;
-    return storeForVersion(version);
-  }, secret: () => secret, passwordHash: () => hash, now: () => first.at });
-  const read = request('GET', cookie()); read.url = '/api/admin-scores?version=geared-v10';
+test('retired rule requests cannot read historical scores or mutate current scores', async () => {
+  const { store, handlers } = service(); await store.save(first);
+  for (const version of ['geared-v10', '../geared-v10']) {
+    const read = request('GET', cookie()); read.url = `/api/admin-scores?version=${encodeURIComponent(version)}`;
+    const result = response(); await handlers.scores(read, result);
+    assert.equal(result.statusCode, 410); assert.equal(result.body.entries, undefined);
+    const write = response();
+    await handlers.scores(request('PATCH', cookie(), { version, id: first.id, action: 'delete', revision: 0 }), write);
+    assert.equal(write.statusCode, 410);
+  }
+  const read = request('GET', cookie()); read.url = '/api/admin-scores?version=sprint250-v11';
   const result = response(); await handlers.scores(read, result);
-  assert.equal(result.body.roadblockGap, 500); assert.equal(result.body.entries[0].id, second.id);
-  const deleted = response(); await handlers.scores(request('PATCH', cookie(), { version: 'geared-v10', id: second.id, action: 'delete', revision: 0 }), deleted);
-  assert.equal(deleted.statusCode, 200); assert.equal((await legacy.entries()).length, 0);
-  assert.equal((await current.entries())[0].id, first.id);
+  assert.equal(result.statusCode, 200); assert.equal(result.body.roadblockGap, 250);
+  assert.equal(result.body.entries[0].id, first.id); assert.equal(result.body.entries[0].revision, 0);
+  assert.equal((await store.entries())[0].id, first.id);
 });

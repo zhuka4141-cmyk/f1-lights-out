@@ -17,7 +17,10 @@ function bodyOf(req) {
     return data;
   } catch { throw new PublicError('请求内容无效。'); }
 }
-export function createAdminHandlers({ store, resolveStore, secret, passwordHash, now = Date.now }) {
+function assertCurrentVersion(version) {
+  if (version && version !== BOARD_VERSION) throw new PublicError('该赛制已停用。', 410);
+}
+export function createAdminHandlers({ store, secret, passwordHash, now = Date.now }) {
   const wrap = action => async (req, res) => {
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -46,14 +49,13 @@ export function createAdminHandlers({ store, resolveStore, secret, passwordHash,
     scores: wrap(async (req, res) => {
       assertAdmin(req, secret(), passwordHash(), now());
       if (req.method === 'GET') {
-        const version = new URL(req.url || '/', 'http://localhost').searchParams.get('version') || BOARD_VERSION;
-        const selected = resolveStore ? resolveStore(version) : store;
-        return res.status(200).json({ ...await selected.allEntries(), version, roadblockGap: selected.roadblockGap });
+        assertCurrentVersion(new URL(req.url || '/', 'http://localhost').searchParams.get('version'));
+        return res.status(200).json({ ...await store.allEntries(), version: BOARD_VERSION, roadblockGap: store.roadblockGap });
       }
       if (req.method !== 'PATCH') { res.setHeader('Allow', 'GET, PATCH'); throw new PublicError('请求方法无效。', 405); }
       checkOrigin(req); const change = bodyOf(req);
-      const selected = resolveStore ? resolveStore(change.version || BOARD_VERSION) : store;
-      const entry = await selected.moderate(change, now());
+      assertCurrentVersion(change.version);
+      const entry = await store.moderate(change, now());
       return res.status(200).json({ entry });
     }),
   };

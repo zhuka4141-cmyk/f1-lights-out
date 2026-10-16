@@ -1,5 +1,5 @@
 import { get, list, put, BlobNotFoundError, BlobPreconditionFailedError } from '@vercel/blob';
-import { isScoringResult, rankLeaderboard } from '../src/core.mjs';
+import { RULES, isScoringResult, rankLeaderboard } from '../src/core.mjs';
 import { BOARD_VERSION, PublicError } from './protocol.mjs';
 import { applyModeration, changeModeration } from './moderation.mjs';
 
@@ -14,7 +14,7 @@ function decodeIndex(pathname, prefix, roadblockGap) {
   } catch { return null; }
 }
 export function createBlobStore(namespace = BOARD_VERSION, client = { get, list, put }) {
-  const roadblockGap = namespace === 'geared-v10' ? 500 : 250;
+  const roadblockGap = RULES.roadblockGap;
   const prefix = `leaderboards/${namespace}/`, moderationPath = `${prefix}moderation.json`;
   let cached = null, loading = null, generation = 0;
   const invalidate = () => { cached = null; generation++; };
@@ -111,9 +111,3 @@ export function createBlobStore(namespace = BOARD_VERSION, client = { get, list,
   return store;
 }
 export const blobStore = createBlobStore();
-const adminStores = new Map([[BOARD_VERSION, blobStore]]);
-export function storeForVersion(version) {
-  if (![BOARD_VERSION, 'geared-v10'].includes(version)) throw new PublicError('请选择有效的赛制。');
-  if (!adminStores.has(version)) adminStores.set(version, createBlobStore(version));
-  return adminStores.get(version);
-}

@@ -23,7 +23,6 @@
     <section id="managerPanel" hidden>
       <div class="page-title"><div><p class="eyebrow">LEADERBOARD ADMIN</p><h1>玩家成绩</h1></div><div class="actions"><button id="reloadButton" type="button">刷新</button><button id="logoutButton" type="button">退出登录</button></div></div>
       <div class="stat-grid"><div><span>有效成绩</span><strong id="activeCount">0</strong></div><div><span>独立玩家</span><strong id="playerCount">0</strong></div><div><span>回收站</span><strong id="deletedCount">0</strong></div></div>
-      <label class="version-label" for="versionSelect">赛制<select id="versionSelect"><option value="sprint250-v11">当前 · 250 米刹停区</option><option value="geared-v10">历史 · 500 米刹停区</option></select></label>
       <div class="toolbar"><div class="tabs" aria-label="成绩筛选"><button id="activeTab" type="button" aria-pressed="true">有效成绩</button><button id="deletedTab" type="button" aria-pressed="false">回收站</button></div><label class="search-label" for="searchInput">搜索<input id="searchInput" type="search" placeholder="昵称、玩家编号或成绩编号" autocomplete="off"></label></div>
       <p id="managerFeedback" class="feedback" role="status">正在读取成绩…</p>
       <div class="table-wrap"><table><thead><tr><th scope="col">车手 / 玩家编号</th><th scope="col">距路障</th><th scope="col">起步反应</th><th scope="col">冲线时间</th><th scope="col">综合得分</th><th scope="col">提交时间</th><th scope="col">操作</th></tr></thead><tbody id="scoreRows"></tbody></table><p id="noResults" class="empty" hidden>没有符合条件的成绩。</p></div>
