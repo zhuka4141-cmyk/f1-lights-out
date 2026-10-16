@@ -2,12 +2,12 @@ export function createMusic(button, audio) {
   const preference = 'dragondance-music-enabled-v1';
   let enabled = true, started = false, blocked = false;
   try { enabled = localStorage.getItem(preference) !== 'off'; } catch { /* Storage is optional. */ }
-  audio.volume = .22;
+  audio.volume = .18;
   function update() {
     button.setAttribute('aria-pressed', String(enabled));
     button.setAttribute('aria-label', blocked ? '播放音乐 / Play music' : enabled ? '关闭音乐 / Mute music' : '开启音乐 / Unmute music');
     button.classList.toggle('muted', !enabled);
-    button.title = blocked ? '点击播放音乐 / Click to play music' : 'Cipher — Kevin MacLeod';
+    button.title = blocked ? '点击播放音乐 / Click to play music' : 'Sport News Music — Luis Humanoide';
     button.querySelector('span').textContent = enabled ? '音乐 开' : '音乐 关';
   }
   function play() {
@@ -26,7 +26,7 @@ export function createMusic(button, audio) {
   document.addEventListener('visibilitychange', () => { if (document.hidden) audio.pause(); else play(); });
   update();
   return {
-    start() { started = true; audio.volume = .22; play(); },
+    start() { started = true; audio.currentTime = 0; audio.volume = .18; play(); },
     finish() { audio.volume = .12; },
     stop() { started = false; audio.pause(); },
   };

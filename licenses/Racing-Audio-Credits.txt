@@ -1,0 +1,64 @@
+LIGHTS OUT / dragondancegame — Music and sound effects
+
+MUSIC
+
+Sport News Music (2024), by Luis Humanoide / humanoide9000
+Music by: Luis Humanoide
+Source: https://freesound.org/people/humanoide9000/sounds/769113/
+Author-provided high-quality MP3 rendition:
+https://cdn.freesound.org/previews/769/769113_4361321-hq.mp3
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+File: assets/audio/sport-news-luis-humanoide.mp3
+Changes: none to the supplied MP3. Playback volume is reduced and the track
+loops in the game. This is the public HQ MP3 rendition, not the original WAV.
+The author describes this orchestral recording as inspired by Bryan Tyler's
+Formula 1 theme, made in Studio One using orchestral sample libraries.
+It is not the official Formula 1 theme. No endorsement is implied.
+
+SOUND EFFECTS
+
+All sources below are dedicated under CC0 1.0 Universal:
+https://creativecommons.org/publicdomain/zero/1.0/
+Legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+1. F-1raceCar-IdleAndRaceStartDemo.wav (2013) — Ears68
+Source: https://freesound.org/people/Ears68/sounds/181187/
+Public HQ MP3: https://cdn.freesound.org/previews/181/181187_2214631-hq.mp3
+Field recording of a 2012 Red Bull Renault V8 at Sydney Motorsport Park,
+recorded 10 March 2013, according to the recordist's description.
+Files: assets/audio/f1-v8-idle.wav, assets/audio/f1-v8-high.wav
+Changes: excerpts at 1.0–3.5 s and 9.05–9.8 s; 80 ms loop crossfades;
+140 Hz high-pass / 10 kHz low-pass; DC removal and peak normalization;
+mono 32 kHz / 16-bit PCM. Playback pitch follows the game's RPM.
+
+2. Nissan Maxima handbrake turn (04-25-2009).wav — audible-edge
+Source: https://freesound.org/people/audible-edge/sounds/71741/
+Public HQ MP3: https://cdn.freesound.org/previews/71/71741_995351-hq.mp3
+Real tyre recording made with a Rode NTG2 and Zoom H4.
+File: assets/audio/tyre-scrub.wav
+Changes: excerpt at 6.03–6.83 s; 80 ms loop crossfade; 550 Hz high-pass /
+7.5 kHz low-pass; DC removal and peak normalization; mono 32 kHz / 16-bit PCM.
+
+3. Firecracker Explosion (2021) — unfa
+Source: https://freesound.org/people/unfa/sounds/609588/
+Public HQ MP3: https://cdn.freesound.org/previews/609/609588_1038806-hq.mp3
+Real firecracker field recording with a Zoom H2, adapted for a game burst.
+File: assets/audio/engine-burst.wav
+Changes: 35 Hz high-pass / 9 kHz low-pass; 120 ms end fade; DC removal and
+peak normalization; mono 32 kHz / 16-bit PCM; lower playback rate in game.
+
+4. Impact Sounds 1.0 (2019) — Kenney (www.kenney.nl)
+Source: https://kenney.nl/assets/impact-sounds
+License: CC0, as included in the downloaded pack's License.txt.
+Original files: Audio/impactMetal_heavy_000.ogg,
+Audio/impactMetal_light_002.ogg
+Files: assets/audio/metal-impact.wav, assets/audio/gear-click.wav
+Changes: mono 32 kHz / 16-bit PCM, DC removal, normalization; heavy impact
+filtered at 45 Hz / 8.5 kHz; light impact cut to 160 ms, filtered at
+250 Hz / 5 kHz and faded out. The light impact accompanies gear shifts.
+
+The game uses downloaded recordings, not AI-generated music or sound effects.
+All six effects are pre-edited local files; no third-party audio service runs
+during gameplay. User-started playback, mute and background pause are supported.

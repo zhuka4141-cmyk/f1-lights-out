@@ -7,6 +7,7 @@ import { createRoadsideDetails } from './roadside.mjs';
 import { createCollisionEffects } from './collision-fx.mjs';
 import { createVegetation } from './vegetation.mjs';
 import { createFinishSparks } from './finish-fx.mjs';
+import { sampleEngineCoast } from './impact.mjs';
 
 const assetURL = file => new URL(`../assets/${file}`, import.meta.url).href;
 const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'grass',
@@ -478,6 +479,7 @@ export async function createScene(container) {
 
   let lastLights = -1, lastTime = performance.now(), resultBlend = 0, dirty = true;
   let lastDistance = NaN, lastSkid = NaN, lastPhase = '', lastImpactAge = null;
+  let engineBlownAt = null, aftermath = null;
   let renderedFrames = 0, skippedFrames = 0;
   const eye = new THREE.Vector3(), target = new THREE.Vector3(), alternateEye = new THREE.Vector3(), alternateTarget = new THREE.Vector3();
   function resize() {
@@ -493,12 +495,14 @@ export async function createScene(container) {
   resize(); window.addEventListener('resize', resize);
   return {
     diagnostics() { return { calls:renderer.info.render.calls, triangles:renderer.info.render.triangles,
-      renderedFrames, skippedFrames, ...roadside.diagnostics(), ...vegetation.diagnostics(),
+      renderedFrames, skippedFrames, coastDistance:aftermath?.distance ?? 0, coastSpeed:aftermath?.speed ?? 0,
+      ...roadside.diagnostics(), ...vegetation.diagnostics(),
       fence:assets.realFence.children.flatMap(group => { const materials = []; group.traverse(mesh => { if (mesh.isMesh) materials.push({ name:mesh.material.name, alpha:!!mesh.material.alphaMap }); }); return materials; }) }; },
     reset() {
       car.position.set(laneX, .37, carStartZ); car.rotation.y = Math.PI; resultBlend = 0; collisionFX.reset();
       finishSparks.reset(); finishCelebrated = false;
       dirty = true; lastDistance = NaN; lastSkid = NaN; lastImpactAge = null;
+      engineBlownAt = null; aftermath = null;
     },
     setLights(count) {
       if (count === lastLights) return; lastLights = count;
@@ -508,10 +512,14 @@ export async function createScene(container) {
     render(now, drive) {
       const dt = Math.min(.1, Math.max(0, (now - lastTime) / 1000)); lastTime = now;
       const skid = drive.skidded ? 1 - Math.exp(-drive.skidTime * 3) : 0;
-      const changed = drive.distance !== lastDistance || skid !== lastSkid;
       const engineBlown = drive.result?.type === 'engine-blown';
+      if (engineBlown && engineBlownAt === null) engineBlownAt = now;
+      const maxTravel = Math.max(0, RULES.distance + RULES.roadblockGap - drive.distance);
+      aftermath = engineBlown ? sampleEngineCoast(drive.outcomeSpeed, (now - engineBlownAt) / 1000, maxTravel) : null;
+      const displayDistance = drive.distance + (aftermath?.distance ?? 0);
+      const changed = displayDistance !== lastDistance || skid !== lastSkid;
       const collision = drive.result?.type === 'collision' || engineBlown;
-      const impactActive = collision && (lastImpactAge === null || lastImpactAge < 8);
+      const impactActive = collision && (lastImpactAge === null || lastImpactAge < (engineBlown ? 16 : 8));
       if (drive.finishCrossed && !finishCelebrated) {
         finishCelebrated = true;
         if (drive.elapsed - drive.finishAt < 2.9) finishSparks.start(now - Math.max(0, drive.elapsed - drive.finishAt) * 1000);
@@ -519,14 +527,15 @@ export async function createScene(container) {
       const finishActive = finishSparks.active;
       const orbiting = drive.phase === 'stopped' && !collision && resultBlend < 1;
       if (document.hidden || (!dirty && !changed && drive.phase === lastPhase && !orbiting && !impactActive && !finishActive)) {
-        skippedFrames++; return;
+        skippedFrames++; return aftermath;
       }
-      car.position.z = carStartZ - drive.distance;
+      car.position.z = carStartZ - displayDistance;
       car.position.x = laneX + skid * 2.8; car.rotation.y = Math.PI - skid * 1.15;
       roadside.update(car.position.z);
       updateStaticVisibility(car.position.z);
       const impactZ = engineBlown ? car.position.z : roadblockZ;
-      if (collision) collisionFX.start(now, { x:car.position.x, z:impactZ, speed:drive.result.stats.outcomeSpeed, engine:engineBlown });
+      if (collision) collisionFX.start(now, { x:car.position.x, z:impactZ, speed:drive.result.stats.outcomeSpeed,
+        engine:engineBlown, maxTravel });
       const impactAge = collisionFX.update(now);
       lastImpactAge = impactAge;
       finishSparks.update(now);
@@ -562,7 +571,8 @@ export async function createScene(container) {
       renderer.shadowMap.needsUpdate = changed || impactActive;
       renderer.render(scene, camera);
       renderedFrames++; dirty = false;
-      lastDistance = drive.distance; lastSkid = skid; lastPhase = drive.phase;
+      lastDistance = displayDistance; lastSkid = skid; lastPhase = drive.phase;
+      return aftermath;
     },
   };
 }

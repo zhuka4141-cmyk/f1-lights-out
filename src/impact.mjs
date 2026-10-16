@@ -1,5 +1,19 @@
 export const COLLISION_REPLAY_MS = 2600;
 
+// A failed engine loses power, not momentum. Rolling resistance and aerodynamic
+// drag slow the visual aftermath; this never advances the finished race/replay.
+export function sampleEngineCoast(speedKmh, seconds, maxDistance = Infinity) {
+  const initial = Math.max(0, speedKmh) / 3.6, rolling = 3.6, drag = .0018;
+  const scale = Math.sqrt(rolling / drag), rate = Math.sqrt(rolling * drag);
+  const angle = Math.atan(initial / scale), stopTime = angle / rate;
+  const t = Math.max(0, Math.min(seconds, stopTime));
+  const remainingAngle = Math.max(0, angle - rate * t);
+  const distance = Math.log(Math.cos(remainingAngle) / Math.cos(angle)) / drag;
+  const limit = Math.max(0, maxDistance), atBarrier = distance >= limit;
+  return { distance:Math.min(distance, limit), speed:atBarrier || t >= stopTime ? 0 : scale * Math.tan(remainingAngle),
+    stopped:atBarrier || t >= stopTime, stopTime };
+}
+
 // Visual aftermath only: racing physics and the recorded impact stay unchanged.
 export function createDebrisMotion(origin, contactX, speedKmh, random = Math.random) {
   const strength = .28 + .72 * Math.max(0, Math.min(1, speedKmh / 250));

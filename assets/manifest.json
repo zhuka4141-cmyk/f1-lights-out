@@ -738,12 +738,66 @@
     "changes": "Authored straight module extracted into _web version; posts optimized from 3024 to 1007 triangles. All 30 wire-plane triangles and full-resolution PBR/alpha maps retained. Original kit retained as source."
   },
   {
-    "file": "assets/audio/cipher-kevin-macleod.mp3",
-    "bytes": 9252699,
-    "sha256": "d3d0614535a61d748e2fd8d5117fc4d781022a7624794802a2462d8af3fdd522",
-    "source": "Cipher — Kevin MacLeod (2011)",
-    "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100844&Search=Search",
+    "file": "assets/audio/sport-news-luis-humanoide.mp3",
+    "bytes": 1750854,
+    "sha256": "68398396774c83cef1477604bcc34e79317f9e6a93827c19294b0eccd9901921",
+    "source": "Sport News Music — Luis Humanoide (2024)",
+    "source_url": "https://freesound.org/people/humanoide9000/sounds/769113/",
     "license": "CC BY 4.0",
-    "changes": "None. Original composer-supplied MP3; reduced playback volume and looping in the game."
+    "changes": "Unmodified public HQ MP3 rendition, not the original WAV. Volume reduction and looping during playback."
+  },
+  {
+    "file": "assets/audio/f1-v8-idle.wav",
+    "bytes": 154924,
+    "sha256": "21e0fe297d4ce1e312c0ba4e0edb969a3473f2f63ffe4934cc1c11048c61259b",
+    "source": "F-1raceCar-IdleAndRaceStartDemo.wav — Ears68 (2013)",
+    "source_url": "https://freesound.org/people/Ears68/sounds/181187/",
+    "license": "CC0",
+    "changes": "1.0–3.5 s excerpt of a real 2012 Red Bull Renault V8; filtered, normalized, mono 32 kHz PCM, 80 ms loop crossfade."
+  },
+  {
+    "file": "assets/audio/f1-v8-high.wav",
+    "bytes": 42924,
+    "sha256": "c96d6e3b6eb72599ea13d424290ac0e1cd31c46df0e08f6e75c8439461819693",
+    "source": "F-1raceCar-IdleAndRaceStartDemo.wav — Ears68 (2013)",
+    "source_url": "https://freesound.org/people/Ears68/sounds/181187/",
+    "license": "CC0",
+    "changes": "9.05–9.8 s excerpt; filtered, normalized, mono 32 kHz PCM, 80 ms loop crossfade. Pitch follows game RPM."
+  },
+  {
+    "file": "assets/audio/tyre-scrub.wav",
+    "bytes": 46124,
+    "sha256": "03785c59cc58d31bbffdda9de1308363b2a75de1cf591d2aca852ae3443500aa",
+    "source": "Nissan Maxima handbrake turn (04-25-2009).wav — audible-edge",
+    "source_url": "https://freesound.org/people/audible-edge/sounds/71741/",
+    "license": "CC0",
+    "changes": "6.03–6.83 s excerpt of real tyre audio; filtered, normalized, mono 32 kHz PCM, 80 ms loop crossfade."
+  },
+  {
+    "file": "assets/audio/engine-burst.wav",
+    "bytes": 145004,
+    "sha256": "320a2aa7a77ab0494e3e84cd3fe37891050ade4b1ee3c8d0ee297d80124b5830",
+    "source": "Firecracker Explosion — unfa (2021)",
+    "source_url": "https://freesound.org/people/unfa/sounds/609588/",
+    "license": "CC0",
+    "changes": "Real firecracker adapted for game explosion. Filtered, normalized, mono 32 kHz PCM, 120 ms end fade; playback slowed."
+  },
+  {
+    "file": "assets/audio/metal-impact.wav",
+    "bytes": 10590,
+    "sha256": "e506ec55ac756a44ecb04640c9f60e0c3c56302e887fd9e6e215a1b4ff753273",
+    "source": "Impact Sounds 1.0 — Kenney (2019)",
+    "source_url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "changes": "impactMetal_heavy_000.ogg; filtered, normalized, mono 32 kHz PCM."
+  },
+  {
+    "file": "assets/audio/gear-click.wav",
+    "bytes": 10284,
+    "sha256": "524d936b74958e71150d0570650e60c73df6b5117dbb453ce117e377147781e3",
+    "source": "Impact Sounds 1.0 — Kenney (2019)",
+    "source_url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "changes": "impactMetal_light_002.ogg; first 160 ms, filtered, normalized, faded out, mono 32 kHz PCM."
   }
 ]

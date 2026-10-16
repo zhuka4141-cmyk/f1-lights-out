@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createDebrisMotion, sampleDebris } from './impact.mjs';
+import { createDebrisMotion, sampleDebris, sampleEngineCoast } from './impact.mjs';
 
 export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion) {
   const effects = new THREE.Group(); effects.visible = false; scene.add(effects);
@@ -61,10 +61,10 @@ export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion)
   let state = null;
   const rotationMatrix = new THREE.Matrix4();
   return {
-    start(now, { x, z, speed, engine = false }) {
+    start(now, { x, z, speed, engine = false, maxTravel = Infinity }) {
       if (state) return;
       const strength = .35 + .65 * Math.min(1, Math.max(0, speed / 250));
-      state = { startedAt:now, x, z, strength, engine, sparks:[] };
+      state = { startedAt:now, x, z, speed, maxTravel, strength, engine, sparks:[] };
       roadblocks.visible = engine; effects.visible = true;
       fragments.forEach(fragment => {
         fragment.mesh.visible = !engine;
@@ -75,6 +75,7 @@ export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion)
           dx:(Math.random() - .5) * (p.smoke ? 5 : 4), dz:(Math.random() - .5) * 4,
           rise:p.smoke ? 2 + Math.random() * 2.3 : 1 + Math.random() * 2.8,
           size:p.smoke ? 2.3 + Math.random() * 2.6 : 1.4 + Math.random() * 2.6 });
+        if (engine && p.smoke) p.delay = Math.random() * p.life;
         p.sprite.material.rotation = Math.random() * Math.PI * 2;
         p.sprite.material.opacity = 0;
       }
@@ -87,6 +88,8 @@ export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion)
     update(now) {
       if (!state) return null;
       const age = Math.max(0, (now - state.startedAt) / 1000), { x, z, strength } = state;
+      const coast = state.engine ? sampleEngineCoast(state.speed, age, state.maxTravel) : null;
+      const emitterZ = z - (coast?.distance ?? 0);
       fragments.forEach(({ mesh, motion, halfSize }) => {
         if (state.engine) return;
         const sample = sampleDebris(motion, age);
@@ -97,24 +100,35 @@ export function createCollisionEffects(scene, roadblocks, mobile, reducedMotion)
         mesh.position.y = Math.max(mesh.position.y, .36 + extent);
       });
       particles.forEach(p => {
-        const t = age - p.delay, progress = t / p.life;
+        const elapsed = age - p.delay;
+        // Reuse the same pool for the smoking engine. Each smoke puff stays at
+        // its emission position, leaving a trail instead of dragging a cloud.
+        const cycle = state.engine && elapsed >= 0 ? Math.floor(elapsed / p.life) : 0;
+        const born = p.delay + cycle * p.life, t = age - born, progress = t / p.life;
         p.sprite.visible = progress >= 0 && progress < 1;
+        if (state.engine && born > (p.smoke ? 10 : 3.5)) p.sprite.visible = false;
         if (!p.sprite.visible) return;
+        const birthCoast = state.engine && p.smoke ? sampleEngineCoast(state.speed, born, state.maxTravel) : null;
+        const birthZ = birthCoast ? z - birthCoast.distance : emitterZ;
+        const drift = birthCoast ? birthCoast.speed * (1 - Math.exp(-1.8 * t)) / 1.8 : 0;
+        const fade = state.engine && !p.smoke && cycle > 0 ? .32 : 1;
         const expansion = p.smoke ? .45 + progress * 1.8 : .35 + Math.sin(progress * Math.PI) * 1.15;
-        p.sprite.scale.setScalar(p.size * expansion * strength);
-        p.sprite.position.set(x + p.dx * (.35 + progress), 1 + t * p.rise, z + p.dz - t * 1.3);
-        p.sprite.material.opacity = Math.sin(Math.PI * progress) * (p.smoke ? .6 : .95);
+        p.sprite.scale.setScalar(p.size * expansion * strength * (fade < 1 ? .65 : 1));
+        p.sprite.position.set(x + p.dx * (.35 + progress), 1 + t * p.rise, birthZ - drift + p.dz - t * 1.3);
+        const opacity = birthCoast ? Math.min(1, t / .18) * (1 - progress) ** 1.3 : Math.sin(Math.PI * progress);
+        p.sprite.material.opacity = opacity * (p.smoke ? .6 : .95) * fade;
         if (!p.smoke) p.sprite.material.color.setRGB(1, 1 - .3 * progress, 1 - .75 * progress);
       });
       state.sparks.forEach((spark, i) => {
         const alive = age < spark.life;
         sparkPositions[i * 3] = x + spark.vx * age / (1 + age * .6);
         sparkPositions[i * 3 + 1] = alive ? Math.max(.38, 1.2 + spark.vy * age - 4.905 * age ** 2) : -100;
-        sparkPositions[i * 3 + 2] = z + spark.vz * age / (1 + age * .5);
+        sparkPositions[i * 3 + 2] = emitterZ + spark.vz * age / (1 + age * .5);
       });
       sparkGeometry.attributes.position.needsUpdate = true;
       sparkMaterial.opacity = Math.max(0, 1 - age / 2.2);
       flash.intensity = (reducedMotion ? 55 : 220) * strength * Math.exp(-age * 6);
+      flash.position.z = emitterZ + 1;
       return age;
     },
     reset() {

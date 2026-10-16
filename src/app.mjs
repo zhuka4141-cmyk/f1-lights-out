@@ -5,6 +5,7 @@ import { renderReport } from './report.mjs';
 import { renderLeaderboard } from './leaderboard.mjs';
 import { COLLISION_REPLAY_MS } from './impact.mjs';
 import { createMusic } from './music.mjs';
+import { createRaceAudio } from './race-audio.mjs';
 
 const elements = new Map();
 const $ = id => {
@@ -16,6 +17,7 @@ const attribute = (id, name, value) => { const node = $(id), next = String(value
 const sequence = new StartSequence(), drive = new DriveChallenge();
 const board = new OnlineLeaderboard();
 const music = createMusic($('musicButton'), $('backgroundMusic'));
+const raceAudio = createRaceAudio($('soundButton'));
 const held = { throttle: new Set(), brake: new Set() }, keysHeld = new Set();
 const clearHeld = () => {
   held.throttle.clear(); held.brake.clear(); keysHeld.clear();
@@ -53,6 +55,7 @@ function begin() {
   if (!world || $('leaderboardDialog').open || activeDrive() || ['sequence', 'waiting', 'go'].includes(sequence.phase)) return;
   $('howToPlayDialog').close();
   music.start();
+  raceAudio.start();
   clearHeld(); resetConsent(); drive.reset(); world.reset(); sequence.start(performance.now());
   board.startRun();
   startFlashShown = false; $('launchFlash').classList.remove('flash');
@@ -67,7 +70,7 @@ function begin() {
 }
 function showResult(result) {
   if (!result || resultShown) return;
-  resultShown = true; clearHeld(); music.finish();
+  resultShown = true; clearHeld(); music.finish(); raceAudio.finish();
   $('leaderboardButton').disabled = false;
   resetConsent(); renderReport(result); board.offer(result, drive);
   $('scoreConsent').hidden = !isScoringResult(result);
@@ -114,6 +117,7 @@ function home(event) {
   if (submittingScore) return;
   event?.preventDefault(); if (!world) return;
   music.stop();
+  raceAudio.stop();
   $('howToPlayDialog').close();
   clearHeld(); resetConsent(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
   startFlashShown = false; $('launchFlash').classList.remove('flash');
@@ -227,6 +231,8 @@ const rpm = [...$('rpmStrip').children];
 function frame(now) {
   if (world) {
     updateStart(now); advance(now); world.setLights(sequence.lights);
+    const aftermath = world.render(now, drive);
+    raceAudio.update(drive, sequence, now);
     if (!resultShown && ['collision', 'engine-blown'].includes(drive.result?.type)) {
       if (collisionAt === null) {
         collisionAt = now; clearHeld();
@@ -261,18 +267,17 @@ function frame(now) {
     attribute('brakeGauge', 'aria-valuenow', pressure.toFixed(1));
     $('brakeGauge').classList.toggle('danger', pressure >= 100);
     text('pressureHint', pressure >= 100 ? '接近 115%！松开卸压' : '可分段刹车');
-    const speed = Math.round(drive.speed * 3.6), driving = drive.phase === 'driving';
+    const speed = Math.round((aftermath?.speed ?? drive.speed) * 3.6), driving = drive.phase === 'driving';
     text('speed', String(speed).padStart(3, '0')); text('gear', activeDrive() ? drive.gear : 'N');
     const recentShift = activeDrive() && drive.elapsed - drive.lastShiftAt < .5;
     $('gear').classList.toggle('shifting', recentShift);
     text('gearAction', recentShift ? drive.lastShiftDirection === 'up' ? '升挡' : '降挡' : 'GEAR');
-    const rpmValue = (drive.rpm / 1000).toFixed(1);
+    const rpmValue = (aftermath ? 0 : drive.rpm / 1000).toFixed(1);
     if ($('inputValue').firstChild.textContent !== rpmValue) $('inputValue').firstChild.textContent = rpmValue;
     text('inputLabel', 'RPM');
     $('speed').classList.toggle('overspeed-warning', driving && speed >= 240);
     const bars = activeDrive() ? Math.ceil(drive.rpm / GEARBOX.maxRpm * 12) : ['sequence', 'waiting'].includes(phase) ? 3 : 0;
     rpm.forEach((element, i) => element.classList.toggle('active', i < bars));
-    world.render(now, drive);
   }
   requestAnimationFrame(frame);
 }

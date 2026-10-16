@@ -15,10 +15,11 @@
     <div id="world" aria-hidden="true"></div><div class="scene-shade" aria-hidden="true"></div>
     <div id="launchFlash" aria-hidden="true"></div>
     <header class="header">
-      <button class="music-button" id="musicButton" type="button" aria-pressed="true" aria-label="关闭音乐 / Mute music" title="Cipher — Kevin MacLeod"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-muted" d="m15 9 6 6m0-6-6 6"/></svg><span>音乐 开</span></button>
+      <button class="music-button" id="soundButton" type="button" aria-pressed="true" aria-label="关闭音效 / Mute sound effects" title="F1 V8 · Ears68 / Freesound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-muted" d="m15 9 6 6m0-6-6 6"/></svg><span>音效 开</span></button>
+      <button class="music-button" id="musicButton" type="button" aria-pressed="true" aria-label="关闭音乐 / Mute music" title="Sport News Music — Luis Humanoide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12M9 9l10-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="16" cy="16" rx="3" ry="2"/><path class="sound-muted" d="m3 3 18 18"/></svg><span>音乐 开</span></button>
       <button class="board-button" id="leaderboardButton" aria-haspopup="dialog">排行榜 <span aria-hidden="true">↗</span></button>
     </header>
-    <audio id="backgroundMusic" src="assets/audio/cipher-kevin-macleod.mp3" preload="none" loop aria-hidden="true"></audio>
+    <audio id="backgroundMusic" src="assets/audio/sport-news-luis-humanoide.mp3" preload="none" loop aria-hidden="true"></audio>
     <p class="sr-only" id="resultAnnouncement" role="status" aria-live="polite" aria-atomic="true"></p>
     <dialog id="howToPlayDialog" class="how-to-play" aria-labelledby="howToPlayTitle">
       <div class="how-to-play-content">
@@ -30,7 +31,7 @@
           <li><p>停在 250 米外的路障前，越近越好。刹车压力到 115% 会打滑，松开卸压。</p><p lang="en">Stop close to the barrier 250 m beyond. Release the brake before pressure reaches 115% to avoid locking up.</p></li>
         </ul>
         <button id="confirmStartButton" class="rules-start-button" type="button">开始游戏<span lang="en">START GAME</span></button>
-        <p class="music-credit" lang="en">Music: <a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100844&amp;Search=Search" target="_blank" rel="noopener">Cipher — Kevin MacLeod</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>
+        <p class="music-credit" lang="en">Music: <a href="https://freesound.org/people/humanoide9000/sounds/769113/" target="_blank" rel="noopener">Sport News Music — Luis Humanoide</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a><br>SFX: Ears68 · audible-edge · unfa · Kenney — <a href="licenses/Racing-Audio-Credits.txt" target="_blank" rel="noopener">CC0 / credits</a></p>
       </div>
     </dialog>
     <section class="intro panel" id="introPanel">
