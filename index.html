@@ -4,96 +4,96 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#101719">
-  <meta name="description" content="手动油门冲过 1250 米终点线，超过 250 km/h 引擎爆炸。冲线后滑行与刹车，在 250 米外的路障前精准停稳。">
-  <title>LIGHTS OUT · 1250 米极限刹停</title>
+  <meta name="description" data-i18n-attr="content:description" content="手动油门冲过 1250 米终点线，超过 250 km/h 引擎爆炸。冲线后滑行与刹车，在 250 米外的路障前精准停稳。">
+  <title data-i18n="title">LIGHTS OUT · 1250 米极限刹停</title>
   <link rel="stylesheet" href="styles.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
   <script type="module" src="src/app.mjs"></script>
 </head>
 <body data-phase="idle">
-  <main id="game" aria-label="单座赛车起步与刹停挑战">
+  <main id="game" data-i18n-attr="aria-label:gameLabel" aria-label="单座赛车起步与刹停挑战">
     <div id="world" aria-hidden="true"></div><div class="scene-shade" aria-hidden="true"></div>
     <div id="launchFlash" aria-hidden="true"></div>
     <div id="finishFlash" aria-hidden="true"></div>
     <header class="header">
-      <img class="brand-logo" src="assets/branding/dragon-logo-transparent.webp" width="64" height="64" alt="龙形品牌标志" draggable="false">
+      <img class="brand-logo" src="assets/branding/dragon-logo-transparent.webp" width="64" height="64" data-i18n-attr="alt:logoAlt" alt="龙形品牌标志" draggable="false">
       <button class="music-button" id="soundButton" type="button" aria-pressed="true" aria-label="关闭音效 / Mute sound effects" title="赛车引擎音效 · Ears68 / Freesound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-muted" d="m15 9 6 6m0-6-6 6"/></svg><span>音效 开</span></button>
       <button class="music-button" id="musicButton" type="button" aria-pressed="true" aria-label="关闭音乐 / Mute music" title="Sport News Music — Luis Humanoide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12M9 9l10-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="16" cy="16" rx="3" ry="2"/><path class="sound-muted" d="m3 3 18 18"/></svg><span>音乐 开</span></button>
-      <button class="board-button" id="leaderboardButton" aria-haspopup="dialog">排行榜 <span aria-hidden="true">↗</span></button>
+      <button class="board-button" id="leaderboardButton" aria-haspopup="dialog"><span data-i18n="leaderboard">排行榜</span> <span aria-hidden="true">↗</span></button>
     </header>
     <audio id="backgroundMusic" src="assets/audio/sport-news-luis-humanoide.mp3" preload="none" loop aria-hidden="true"></audio>
     <p class="sr-only" id="resultAnnouncement" role="status" aria-live="polite" aria-atomic="true"></p>
     <dialog id="howToPlayDialog" class="how-to-play" aria-labelledby="howToPlayTitle">
       <div class="how-to-play-content">
-        <h2 id="howToPlayTitle">游戏玩法<small lang="en">HOW TO PLAY</small></h2>
+        <h2 id="howToPlayTitle" data-i18n="howToPlay">游戏玩法</h2>
         <ul class="game-rules">
-          <li><p>灯灭起步。W / 右侧油门，S / 左侧刹车，可同时踩。</p><p lang="en">Wait for lights out. W / right: throttle. S / left: brake. Both work together.</p></li>
-          <li><p>保持在 250 km/h 以内，超速会爆缸。</p><p lang="en">Stay at or below 250 km/h. Overspeed blows the engine.</p></li>
-          <li><p>尽快冲过 1250 米终点，冲线后动力切断。</p><p lang="en">Cross the 1,250 m finish fast. Power cuts at the line.</p></li>
-          <li><p>停在 250 米外的路障前，越近越好。刹车压力到 115% 会打滑，松开卸压。</p><p lang="en">Stop close to the barrier 250 m beyond. Release the brake before pressure reaches 115% to avoid locking up.</p></li>
+          <li><p data-i18n="rule1">灯灭起步。W / 右侧油门，S / 左侧刹车，可同时踩。</p></li>
+          <li><p data-i18n="rule2">保持在 250 km/h 以内，超速会爆缸。</p></li>
+          <li><p data-i18n="rule3">尽快冲过 1250 米终点，冲线后动力切断。</p></li>
+          <li><p data-i18n="rule4">停在 250 米外的路障前，越近越好。刹车压力到 115% 会打滑，松开卸压。</p></li>
         </ul>
         <form id="startForm" class="start-form" novalidate>
-          <label for="driverName">车手名字 <small lang="en">DRIVER NAME · REQUIRED</small></label>
-          <input id="driverName" name="driverName" type="text" autocomplete="nickname" maxlength="40" required placeholder="输入名字 / Enter your name" aria-describedby="nameNotice nameError">
-          <p id="nameNotice" class="name-notice">有效成绩将以此名字自动记录到公开排行榜。<span lang="en">Valid results are automatically saved to the public leaderboard under this name.</span></p>
+          <label for="driverName"><span data-i18n="driverName">车手名字</span></label>
+          <input id="driverName" name="driverName" type="text" autocomplete="nickname" maxlength="40" required data-i18n-attr="placeholder:namePlaceholder" placeholder="输入名字" aria-describedby="nameNotice nameError">
+          <p id="nameNotice" class="name-notice" data-i18n="nameNotice">有效成绩将以此名字自动记录到公开排行榜。</p>
           <p id="nameError" class="name-error" role="alert" hidden></p>
-          <button id="confirmStartButton" class="rules-start-button" type="submit">开始游戏<span lang="en">START GAME</span></button>
+          <button id="confirmStartButton" class="rules-start-button" type="submit"><span data-i18n="startGame">开始游戏</span></button>
         </form>
-        <p class="asset-credits-link"><a href="credits.html" target="_blank" rel="noopener">素材与授权</a></p>
+        <p class="asset-credits-link"><a href="credits.html" target="_blank" rel="noopener" data-i18n="creditsLink">素材与授权</a></p>
       </div>
     </dialog>
     <section class="intro panel" id="introPanel">
-      <h1 class="intro-title">赛车刹停游戏</h1>
-      <p class="intro-meta">1250 m 终点 · 1500 m 路障 · 250 km/h</p>
-      <button class="primary-button" id="startButton" disabled><span id="startLabel">准备中…</span></button>
-      <p class="start-note">左刹车 · 右油门，可同时踩；超过 250 爆缸<br>冲过终点线，再贴近 250 米外路障停稳</p>
+      <h1 class="intro-title" data-i18n="introTitle">赛车刹停游戏</h1>
+      <p class="intro-meta" data-i18n="introMeta">1250 m 终点 · 1500 m 路障 · 250 km/h</p>
+      <button class="primary-button" id="startButton" disabled><span id="startLabel" data-i18n="preparing">准备中…</span></button>
+      <p class="start-note" data-i18n-html="startNote">左刹车 · 右油门，可同时踩；超过 250 爆缸<br>冲过终点线，再贴近 250 米外路障停稳</p>
     </section>
-    <section class="live-reaction" id="liveReaction" hidden aria-label="行驶数据"><span id="liveLabel">距终点线</span><div><strong id="liveTime">1250.00</strong><small>m</small></div><p id="liveSecondary"></p></section>
-    <section class="telemetry" aria-label="赛车仪表"><div class="rpm-strip" id="rpmStrip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="dash-data"><div class="gear"><strong id="gear">N</strong><span id="gearAction">GEAR</span></div><div class="speed"><strong id="speed">000</strong><span>km/h</span></div><div class="input-data"><strong id="inputValue">0.0<small>K</small></strong><span id="inputLabel">RPM</span></div></div></section>
+    <section class="live-reaction" id="liveReaction" hidden data-i18n-attr="aria-label:liveAria" aria-label="行驶数据"><span id="liveLabel" data-i18n="toFinish">距终点线</span><div><strong id="liveTime">1250.00</strong><small>m</small></div><p id="liveSecondary"></p></section>
+    <section class="telemetry" data-i18n-attr="aria-label:telemetryAria" aria-label="赛车仪表"><div class="rpm-strip" id="rpmStrip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="dash-data"><div class="gear"><strong id="gear">N</strong><span id="gearAction" data-i18n="gearLabel">GEAR</span></div><div class="speed"><strong id="speed">000</strong><span>km/h</span></div><div class="input-data"><strong id="inputValue">0.0<small>K</small></strong><span id="inputLabel">RPM</span></div></div></section>
     <div class="pedal-area brake-area">
-      <div class="pedal-wrap"><button id="brakeButton" class="throttle-button brake-mode" disabled aria-label="按住刹车" aria-describedby="brakePedalHint" aria-pressed="false"><span class="pedal-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong>刹车</strong><span>BRAKE</span><kbd>S</kbd></button><span class="pedal-hint" id="brakePedalHint">可与油门同时踩</span></div>
-      <div class="brake-pressure" id="brakeGauge" hidden role="meter" aria-label="刹车压力，115% 时锁死打滑" aria-valuemin="0" aria-valuemax="115" aria-valuenow="0"><div class="pressure-heading"><span>刹车压力</span><strong id="pressureValue">0%</strong></div><div class="pressure-track"><i id="pressureFill"></i><span class="rated-line" title="100% 额定压力"></span><span class="limit-line"></span><small>115%<br>打滑线</small></div><p id="pressureHint">可分段刹车</p></div>
+      <div class="pedal-wrap"><button id="brakeButton" class="throttle-button brake-mode" disabled data-i18n-attr="aria-label:brakeAria" aria-label="按住刹车" aria-describedby="brakePedalHint" aria-pressed="false"><span class="pedal-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong data-i18n="brake">刹车</strong><span>BRAKE</span><kbd>S</kbd></button><span class="pedal-hint" id="brakePedalHint" data-i18n="brakeHintTogether">可与油门同时踩</span></div>
+      <div class="brake-pressure" id="brakeGauge" hidden role="meter" data-i18n-attr="aria-label:brakeGaugeAria" aria-label="刹车压力，115% 时锁死打滑" aria-valuemin="0" aria-valuemax="115" aria-valuenow="0"><div class="pressure-heading"><span data-i18n="brakePressure">刹车压力</span><strong id="pressureValue">0%</strong></div><div class="pressure-track"><i id="pressureFill"></i><span class="rated-line" title="100% 额定压力"></span><span class="limit-line"></span><small data-i18n-html="slipLine">115%<br>打滑线</small></div><p id="pressureHint" data-i18n="pressureHint">可分段刹车</p></div>
     </div>
     <div class="pedal-area throttle-area">
-      <div class="pedal-wrap"><button id="throttleButton" class="throttle-button" disabled aria-label="踩下油门" aria-describedby="pedalHint" aria-pressed="false"><span class="pedal-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong id="pedalLabel">油门</strong><span id="pedalEnglish">THROTTLE</span><kbd>W</kbd></button><span class="pedal-hint" id="pedalHint">灯灭后，再踩下</span></div>
+      <div class="pedal-wrap"><button id="throttleButton" class="throttle-button" disabled data-i18n-attr="aria-label:throttleAria" aria-label="踩下油门" aria-describedby="pedalHint" aria-pressed="false"><span class="pedal-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong id="pedalLabel" data-i18n="throttle">油门</strong><span id="pedalEnglish">THROTTLE</span><kbd>W</kbd></button><span class="pedal-hint" id="pedalHint" data-i18n="pedalWait">灯灭后，再踩下</span></div>
     </div>
     <p class="load-error" id="loadError" hidden role="alert"></p>
     <div class="result-scrim" id="resultScrim" hidden></div>
     <section class="result" id="resultPanel" hidden role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
       <div class="result-content" id="resultContent">
-      <div class="report-summary"><p class="eyebrow result-eyebrow">SESSION REPORT · <b id="resultDriver"></b> <span id="resultBadge">已停稳</span></p>
-      <h2 id="resultTitle">漂亮刹停。</h2><p class="result-description" id="resultDescription"></p>
-      <div class="stop-offset"><span id="offsetLabel">车头距路障</span><strong id="resultTime">—</strong><small id="resultUnit">m</small></div>
+      <div class="report-summary"><p class="eyebrow result-eyebrow"><span data-i18n="reportKicker">本轮报告</span> · <b id="resultDriver"></b> <span id="resultBadge" data-i18n="stopped">已停稳</span></p>
+      <h2 id="resultTitle" data-i18n="doneTitle">刹停完成。</h2><p class="result-description" id="resultDescription"></p>
+      <div class="stop-offset"><span id="offsetLabel" data-i18n="offsetBarrier">车头距路障</span><strong id="resultTime">—</strong><small id="resultUnit">m</small></div>
       <p class="completion-time" id="completionTime"></p></div>
-      <div class="result-stats" id="resultStats"><div><span id="statBrakeTimeLabel">冲线时间</span><strong id="statBrakeTime">—</strong></div><div><span>制动距离</span><strong id="statBrakeDistance">—</strong></div><div><span>最大刹车压力</span><strong id="statPeakPressure">—</strong></div></div>
-      <div class="chart-panel acceleration-chart"><div class="chart-heading"><strong>加速过程</strong><div class="chart-legend"><span class="speed-key">车速 km/h</span></div></div><div id="accelerationChart"></div><p class="chart-note">起步至冲线 · 白色为车速</p></div>
-      <div class="chart-panel"><div class="chart-heading"><strong>制动过程</strong><div class="chart-legend"><span class="speed-key">车速 km/h</span><span class="pressure-key">压力 %</span></div></div><div id="brakeChart"></div><p class="chart-note" id="chartNote">从第一次刹车开始，含松开滑行时间；红虚线为 115% 打滑线。</p></div>
-      <div class="session-score"><span>本轮综合得分</span><strong id="sessionScore">0</strong><small>距离 50% · 冲线时间 30% · 起步反应 20%</small></div>
-      <div class="score-record" id="scoreRecord" hidden><p id="saveFeedback" class="save-feedback" role="status" hidden></p><button class="text-button retry-save" id="retrySaveButton" type="button" hidden>重试记录 / RETRY SAVE</button></div>
-      <div class="result-actions"><button class="primary-button retry" id="retryButton">再挑战一次 <span aria-hidden="true">↻</span></button><button class="text-button" id="resultHomeButton">返回主页</button></div>
+      <div class="result-stats" id="resultStats"><div><span id="statBrakeTimeLabel" data-i18n="finishTime">冲线时间</span><strong id="statBrakeTime">—</strong></div><div><span data-i18n="brakeDistance">制动距离</span><strong id="statBrakeDistance">—</strong></div><div><span data-i18n="peakPressure">最大刹车压力</span><strong id="statPeakPressure">—</strong></div></div>
+      <div class="chart-panel acceleration-chart"><div class="chart-heading"><strong data-i18n="accelTitle">加速过程</strong><div class="chart-legend"><span class="speed-key" data-i18n="speedKey">车速 km/h</span></div></div><div id="accelerationChart"></div><p class="chart-note" data-i18n="accelNote">起步至冲线 · 白色为车速</p></div>
+      <div class="chart-panel"><div class="chart-heading"><strong data-i18n="brakeTitle">制动过程</strong><div class="chart-legend"><span class="speed-key" data-i18n="speedKey">车速 km/h</span><span class="pressure-key" data-i18n="pressureKey">压力 %</span></div></div><div id="brakeChart"></div><p class="chart-note" id="chartNote" data-i18n="chartNote">从第一次刹车开始，含松开滑行时间；红虚线为 115% 打滑线。</p></div>
+      <div class="session-score"><span data-i18n="scoreLabel">本轮综合得分</span><strong id="sessionScore">0</strong><small data-i18n="scoreWeights">距离 50% · 冲线时间 30% · 起步反应 20%</small></div>
+      <div class="score-record" id="scoreRecord" hidden><p id="saveFeedback" class="save-feedback" role="status" hidden></p><button class="text-button retry-save" id="retrySaveButton" type="button" hidden data-i18n="retrySave">重试记录</button></div>
+      <div class="result-actions"><button class="primary-button retry" id="retryButton"><span data-i18n="retry">再挑战一次</span> <span aria-hidden="true">↻</span></button><button class="text-button" id="resultHomeButton" data-i18n="home">返回主页</button></div>
       </div>
     </section>
     <dialog id="leaderboardDialog" aria-labelledby="leaderboardTitle">
-      <button class="dialog-close" id="closeLeaderboard" aria-label="关闭排行榜">×</button>
-      <p class="eyebrow">ONLINE LEADERBOARD</p><h2 id="leaderboardTitle">1250 米挑战榜</h2>
-      <div class="board-sync"><p class="board-scoring" id="boardStatus" role="status">所有玩家共享</p><button class="text-button" id="refreshLeaderboard" type="button">刷新</button></div>
-      <p class="board-empty" id="boardEmpty">冲过终点线并在路障前停稳后，即可记录上榜。</p>
+      <button class="dialog-close" id="closeLeaderboard" data-i18n-attr="aria-label:closeBoard" aria-label="关闭排行榜">×</button>
+      <p class="eyebrow">ONLINE LEADERBOARD</p><h2 id="leaderboardTitle" data-i18n="boardTitle">1250 米挑战榜</h2>
+      <div class="board-sync"><p class="board-scoring" id="boardStatus" role="status" data-i18n="shared">所有玩家共享</p><button class="text-button" id="refreshLeaderboard" type="button" data-i18n="refresh">刷新</button></div>
+      <p class="board-empty" id="boardEmpty" data-i18n="boardEmpty">冲过终点线并在路障前停稳后，即可记录上榜。</p>
       <div class="leaderboard-grid" id="boardTable" hidden>
         <section class="ranking-board" aria-labelledby="distanceRankTitle">
-          <h3 id="distanceRankTitle">距路障</h3>
-          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="distanceRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">距离</th></tr></thead><tbody id="distanceRankRows"></tbody></table></div>
+          <h3 id="distanceRankTitle" data-i18n="rankDistance">距路障</h3>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="distanceRankTitle"><table><thead><tr><th scope="col" data-i18n="colRank">排名</th><th scope="col" data-i18n="colDriver">车手</th><th scope="col" data-i18n="colDistance">距离</th></tr></thead><tbody id="distanceRankRows"></tbody></table></div>
         </section>
         <section class="ranking-board" aria-labelledby="reactionRankTitle">
-          <h3 id="reactionRankTitle">起步反应</h3>
-          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="reactionRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">反应</th></tr></thead><tbody id="reactionRankRows"></tbody></table></div>
+          <h3 id="reactionRankTitle" data-i18n="rankReaction">起步反应</h3>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="reactionRankTitle"><table><thead><tr><th scope="col" data-i18n="colRank">排名</th><th scope="col" data-i18n="colDriver">车手</th><th scope="col" data-i18n="colReaction">反应</th></tr></thead><tbody id="reactionRankRows"></tbody></table></div>
         </section>
         <section class="ranking-board" aria-labelledby="completionRankTitle">
-          <h3 id="completionRankTitle">冲线时间</h3>
-          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="completionRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">时间</th></tr></thead><tbody id="completionRankRows"></tbody></table></div>
+          <h3 id="completionRankTitle" data-i18n="rankFinish">冲线时间</h3>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="completionRankTitle"><table><thead><tr><th scope="col" data-i18n="colRank">排名</th><th scope="col" data-i18n="colDriver">车手</th><th scope="col" data-i18n="colTime">时间</th></tr></thead><tbody id="completionRankRows"></tbody></table></div>
         </section>
         <section class="ranking-board" aria-labelledby="scoreRankTitle">
-          <h3 id="scoreRankTitle">综合得分</h3>
-          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="scoreRankTitle"><table><thead><tr><th scope="col">排名</th><th scope="col">车手</th><th scope="col">得分</th></tr></thead><tbody id="scoreRankRows"></tbody></table></div>
+          <h3 id="scoreRankTitle" data-i18n="rankScore">综合得分</h3>
+          <div class="ranking-scroll" tabindex="0" role="region" aria-labelledby="scoreRankTitle"><table><thead><tr><th scope="col" data-i18n="colRank">排名</th><th scope="col" data-i18n="colDriver">车手</th><th scope="col" data-i18n="colScore">得分</th></tr></thead><tbody id="scoreRankRows"></tbody></table></div>
         </section>
       </div>
     </dialog>

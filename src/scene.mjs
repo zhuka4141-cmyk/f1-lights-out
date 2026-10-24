@@ -8,6 +8,7 @@ import { createCollisionEffects } from './collision-fx.mjs';
 import { createVegetation } from './vegetation.mjs';
 import { createFinishSparks } from './finish-fx.mjs';
 import { sampleEngineCoast } from './impact.mjs';
+import { t } from './i18n.mjs';
 
 const assetURL = file => new URL(`../assets/${file}`, import.meta.url).href;
 const modelNames = ['formula2022', 'roadStraightLong', 'roadStartPositions', 'grass',
@@ -493,7 +494,7 @@ export async function createScene(container) {
   for (const edge of [0, 1856]) for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) {
     banner.fillStyle = (r + c) % 2 ? '#111111' : '#ffffff'; banner.fillRect(edge + c * 64, r * 64, 64, 64);
   }
-  banner.fillStyle = '#ffffff'; banner.font = 'bold 160px Arial'; banner.textAlign = 'center'; banner.textBaseline = 'middle'; banner.fillText('FINISH', 1024, 139);
+  banner.fillStyle = '#ffffff'; banner.font = 'bold 160px Arial'; banner.textAlign = 'center'; banner.textBaseline = 'middle'; banner.fillText(t('finishWord'), 1024, 139);
   const bannerTexture = new THREE.CanvasTexture(bannerCanvas); bannerTexture.colorSpace = THREE.SRGBColorSpace;
   const bannerMaterial = new THREE.MeshStandardMaterial({ map: bannerTexture, roughness: .8 });
   const finishBanner = place('barrierWhite', 0, 7.03, finishZ + .85, [45, 13.4, 2], 0, scene);

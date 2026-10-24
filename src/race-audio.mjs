@@ -1,3 +1,4 @@
+import { t } from './i18n.mjs';
 import { GEARBOX } from './core.mjs';
 
 const FILES = Object.freeze({ idle:'f1-v8-idle.wav', engine:'f1-v8-high.wav', tyres:'tyre-scrub.wav',
@@ -13,10 +14,10 @@ export function createRaceAudio(button) {
   try { enabled = localStorage.getItem(preference) !== 'off'; } catch { /* Optional preference. */ }
   function updateButton() {
     button.setAttribute('aria-pressed', String(enabled));
-    button.setAttribute('aria-label', failed ? '重试音效 / Retry sound effects' : enabled ? '关闭音效 / Mute sound effects' : '开启音效 / Unmute sound effects');
+    button.setAttribute('aria-label', failed ? t('soundRetry') : enabled ? t('soundMute') : t('soundUnmute'));
     button.classList.toggle('muted', !enabled);
-    button.querySelector('span').textContent = enabled ? '音效 开' : '音效 关';
-    button.title = failed ? '点击重试音效 / Retry sound effects' : '赛车引擎音效 · Ears68 / Freesound';
+    button.querySelector('span').textContent = enabled ? t('soundOn') : t('soundOff');
+    button.title = failed ? t('soundRetryTitle') : t('soundTitle');
     button.dataset.audioState = !enabled ? 'muted' : failed ? 'retry' : loading ? 'loading' : buffers.size === 6 ? 'ready' : 'idle';
   }
   function release(voice) {

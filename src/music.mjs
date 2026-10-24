@@ -1,3 +1,4 @@
+import { t } from './i18n.mjs';
 export function createMusic(button, audio) {
   const preference = 'dragondance-music-enabled-v1';
   let enabled = true, started = false, blocked = false;
@@ -5,10 +6,10 @@ export function createMusic(button, audio) {
   audio.volume = .18;
   function update() {
     button.setAttribute('aria-pressed', String(enabled));
-    button.setAttribute('aria-label', blocked ? '播放音乐 / Play music' : enabled ? '关闭音乐 / Mute music' : '开启音乐 / Unmute music');
+    button.setAttribute('aria-label', blocked ? t('musicPlay') : enabled ? t('musicMute') : t('musicUnmute'));
     button.classList.toggle('muted', !enabled);
-    button.title = blocked ? '点击播放音乐 / Click to play music' : 'Sport News Music — Luis Humanoide';
-    button.querySelector('span').textContent = enabled ? '音乐 开' : '音乐 关';
+    button.title = blocked ? t('musicBlockedTitle') : t('musicTitle');
+    button.querySelector('span').textContent = enabled ? t('musicOn') : t('musicOff');
   }
   function play() {
     if (!started || !enabled || document.hidden) return;

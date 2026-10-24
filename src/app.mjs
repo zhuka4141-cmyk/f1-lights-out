@@ -7,7 +7,9 @@ import { COLLISION_REPLAY_MS } from './impact.mjs';
 import { createMusic } from './music.mjs';
 import { createRaceAudio } from './race-audio.mjs';
 import { normalizePlayerName } from './player-name.mjs';
+import { apply, localizeError, t } from './i18n.mjs';
 
+apply(document);
 const elements = new Map();
 const $ = id => {
   if (!elements.has(id)) elements.set(id, document.getElementById(id));
@@ -66,7 +68,7 @@ async function begin() {
   try { name = normalizePlayerName($('driverName').value); }
   catch (error) {
     if (!$('howToPlayDialog').open) $('howToPlayDialog').showModal();
-    $('nameError').textContent = error.message; $('nameError').hidden = false;
+    $('nameError').textContent = localizeError(error.message); $('nameError').hidden = false;
     $('driverName').setAttribute('aria-invalid','true'); $('driverName').focus({ preventScroll:true }); return;
   }
   startingRace = true; $('nameError').hidden = true;
@@ -80,7 +82,7 @@ async function begin() {
     try { localStorage.setItem(namePreference,name); } catch { /* Name remains required for this session. */ }
   } catch (error) {
     music.stop(); raceAudio.stop();
-    const message = '未能开始新一轮：' + error.message;
+    const message = t('startRoundFailed', { message: localizeError(error.message) });
     const feedback = $('howToPlayDialog').open ? $('nameError') : $('saveFeedback');
     feedback.textContent = message; feedback.hidden = false; feedback.classList.add('error');
     if (feedback === $('saveFeedback')) $('scoreRecord').hidden = false;
@@ -99,8 +101,8 @@ async function begin() {
   $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('throttleButton').disabled = false; $('throttleButton').classList.remove('ready', 'down');
   $('brakeButton').disabled = false; $('brakeButton').classList.remove('down');
-  $('pedalHint').textContent = '灯灭后，再踩下';
-  $('brakePedalHint').textContent = '可与油门同时踩';
+  $('pedalHint').textContent = t('pedalWait');
+  $('brakePedalHint').textContent = t('brakeHintTogether');
   $('resultAnnouncement').textContent = ''; $('throttleButton').focus({ preventScroll: true });
 }
 function showResult(result) {
@@ -137,8 +139,8 @@ function press(pedal, source) {
     drive.launch(result.ms); driveClock = now;
     held.throttle.add(source); drive.setThrottle(true); drive.setBraking(held.brake.size > 0);
     $('liveReaction').hidden = $('brakeGauge').hidden = false;
-    $('liveSecondary').textContent = `起步反应 ${result.ms} ms`;
-    $('pedalHint').textContent = '按住油门 · 超过 250 爆缸';
+    $('liveSecondary').textContent = t('reactionLive', { ms: result.ms });
+    $('pedalHint').textContent = t('pedalNear250');
     $('throttleButton').classList.remove('ready');
   } else if (result) showResult(result);
 }
@@ -164,7 +166,7 @@ function home(event) {
   $('introPanel').hidden = false; $('throttleButton').disabled = true;
   $('throttleButton').classList.remove('ready', 'down');
   $('brakeButton').disabled = true; $('brakeButton').classList.remove('down');
-  $('pedalHint').textContent = '灯灭后，再踩下';
+  $('pedalHint').textContent = t('pedalWait');
   document.body.dataset.phase = 'idle'; $('resultAnnouncement').textContent = ''; $('startButton').focus({ preventScroll: true });
 }
 function renderBoard() {
@@ -174,9 +176,9 @@ let boardLoading = false;
 async function refreshBoard() {
   if (boardLoading) return;
   boardLoading = true; $('refreshLeaderboard').disabled = true;
-  $('boardStatus').textContent = '正在同步…'; $('boardStatus').classList.remove('error');
-  try { await board.load(); renderBoard(); $('boardStatus').textContent = '所有玩家共享'; }
-  catch (error) { $('boardStatus').textContent = error.message; $('boardStatus').classList.add('error'); }
+  $('boardStatus').textContent = t('syncing'); $('boardStatus').classList.remove('error');
+  try { await board.load(); renderBoard(); $('boardStatus').textContent = t('shared'); }
+  catch (error) { $('boardStatus').textContent = localizeError(error.message); $('boardStatus').classList.add('error'); }
   finally { boardLoading = false; $('refreshLeaderboard').disabled = false; }
 }
 function openBoard() { cancel(); renderBoard(); $('leaderboardDialog').showModal(); refreshBoard(); }
@@ -237,21 +239,21 @@ async function saveResult() {
   if (submittingScore || board.saved || !board.result) return;
   submittingScore = true;
   $('saveFeedback').hidden = false; $('saveFeedback').classList.remove('error');
-  $('saveFeedback').textContent = `正在以 ${playerName} 记录成绩…`;
+  $('saveFeedback').textContent = t('saving', { name: playerName });
   $('retrySaveButton').hidden = true; $('leaderboardButton').disabled = true;
   $('retryButton').disabled = $('resultHomeButton').disabled = true;
   try {
     const entry = await board.save(); selectedId = entry.id;
-    const ranks = [['distanceCm', '距离'], ['ms', '反应'], ['finishMs', '冲线'], ['score', '综合得分']].map(([metric, label]) => {
+    const ranks = [['distanceCm', 'rankDistanceShort'], ['ms', 'rankReactionShort'], ['finishMs', 'rankFinishShort'], ['score', 'rankScoreShort']].map(([metric, label]) => {
       const best = rankLeaderboard(board.entries, metric).find(item => leaderboardIdentity(item) === leaderboardIdentity(entry));
-      return `${label}第 ${best.rank} 名`;
+      return t('rankBit', { label: t(label), rank: best.rank });
     });
-    $('saveFeedback').textContent = `${entry.name}，已上在线榜 · ${ranks.join(' · ')}`;
-    $('boardStatus').textContent = '所有玩家共享';
+    $('saveFeedback').textContent = t('saved', { name: entry.name, ranks: ranks.join(' · ') });
+    $('boardStatus').textContent = t('shared');
     renderBoard();
   } catch (error) {
     $('saveFeedback').hidden = false; $('saveFeedback').classList.add('error');
-    $('saveFeedback').textContent = '成绩暂未记录：' + error.message;
+    $('saveFeedback').textContent = t('saveFailed', { message: localizeError(error.message) });
     $('retrySaveButton').hidden = false;
   } finally {
     submittingScore = false; $('leaderboardButton').disabled = false;
@@ -282,17 +284,17 @@ function frame(now) {
     $('throttleButton').classList.toggle('ready', phase === 'go');
     if (activeDrive()) {
       const remaining = RULES.distance + (drive.finishCrossed ? RULES.roadblockGap : 0) - drive.distance;
-      text('liveLabel', drive.finishCrossed ? '距路障' : '距终点线');
+      text('liveLabel', drive.finishCrossed ? t('toBarrier') : t('toFinish'));
       text('liveTime', Math.max(0, remaining).toFixed(2));
-      text('liveSecondary', drive.finishCrossed ? `冲线 ${((drive.ms + Math.round(drive.finishAt * 1000)) / 1000).toFixed(3)} s` : `起步反应 ${drive.ms} ms`);
+      text('liveSecondary', drive.finishCrossed ? t('crossedLive', { time: ((drive.ms + Math.round(drive.finishAt * 1000)) / 1000).toFixed(3) }) : t('reactionLive', { ms: drive.ms }));
       $('throttleButton').disabled = drive.skidded || drive.finishCrossed;
       $('brakeButton').disabled = drive.skidded;
       $('throttleButton').classList.toggle('down', drive.throttle);
       $('brakeButton').classList.toggle('down', drive.braking);
       attribute('throttleButton', 'aria-pressed', drive.throttle);
       attribute('brakeButton', 'aria-pressed', drive.braking);
-      text('pedalHint', drive.skidded ? '轮胎锁死' : drive.finishCrossed ? '已冲线 · 动力切断' : drive.speed * 3.6 >= 240 ? '接近 250！松开油门' : '按住加速 · 松开滑行');
-      text('brakePedalHint', drive.skidded ? '轮胎锁死' : drive.finishCrossed ? '按住刹车 · 松开滑行' : '可与油门同时踩');
+      text('pedalHint', drive.skidded ? t('pedalLocked') : drive.finishCrossed ? t('pedalCrossed') : drive.speed * 3.6 >= 240 ? t('pedalNear250') : t('pedalHold'));
+      text('brakePedalHint', drive.skidded ? t('pedalLocked') : drive.finishCrossed ? t('brakeHintCrossed') : t('brakeHintTogether'));
     }
     const pressure = Math.max(0, drive.brakePressure * 100);
     text('pressureValue', `${pressure.toFixed(0)}%`);
@@ -300,12 +302,12 @@ function frame(now) {
     if ($('pressureFill').style.height !== fillHeight) $('pressureFill').style.height = fillHeight;
     attribute('brakeGauge', 'aria-valuenow', pressure.toFixed(1));
     $('brakeGauge').classList.toggle('danger', pressure >= 100);
-    text('pressureHint', pressure >= 100 ? '接近 115%！松开卸压' : '可分段刹车');
+    text('pressureHint', pressure >= 100 ? t('pressureDanger') : t('pressureHint'));
     const speed = Math.round((aftermath?.speed ?? drive.speed) * 3.6), driving = drive.phase === 'driving';
     text('speed', String(speed).padStart(3, '0')); text('gear', activeDrive() ? drive.gear : 'N');
     const recentShift = activeDrive() && drive.elapsed - drive.lastShiftAt < .5;
     $('gear').classList.toggle('shifting', recentShift);
-    text('gearAction', recentShift ? drive.lastShiftDirection === 'up' ? '升挡' : '降挡' : 'GEAR');
+    text('gearAction', recentShift ? drive.lastShiftDirection === 'up' ? t('gearUp') : t('gearDown') : t('gearLabel'));
     const rpmValue = (aftermath ? 0 : drive.rpm / 1000).toFixed(1);
     if ($('inputValue').firstChild.textContent !== rpmValue) $('inputValue').firstChild.textContent = rpmValue;
     text('inputLabel', 'RPM');
@@ -317,8 +319,8 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 createScene($('world')).then(scene => {
-  world = scene; $('startButton').disabled = false; $('startLabel').textContent = '开始游戏';
+  world = scene; $('startButton').disabled = false; $('startLabel').textContent = t('startGame');
 }).catch(error => {
-  console.error('Race scene failed to load', error); $('startLabel').textContent = '场景装载失败'; $('loadError').hidden = false;
-  $('loadError').textContent = '3D 场景未能启动。请使用支持 WebGL 的新版 Chrome、Edge 或 Safari，开启图形加速，并确认已上传整个项目的 assets、vendor 和 src 文件夹。';
+  console.error('Race scene failed to load', error); $('startLabel').textContent = t('startFailedLabel'); $('loadError').hidden = false;
+  $('loadError').textContent = t('loadError');
 });

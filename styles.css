@@ -94,3 +94,7 @@ body[data-phase=sequence] .scene-shade,body[data-phase=waiting] .scene-shade,bod
 #launchFlash,#finishFlash{position:absolute;inset:0;z-index:30;pointer-events:none;opacity:0}#launchFlash{background:#25ef61}#finishFlash{background:#ff3028}#launchFlash.flash,#finishFlash.flash{animation:launch-flash .32s linear both}@keyframes launch-flash{0%{opacity:.26}100%{opacity:0}}@media(prefers-reduced-motion:reduce){#launchFlash.flash,#finishFlash.flash{animation-duration:.16s}}
 
 .ranking-scroll{max-height:316px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#888 #171717;scrollbar-gutter:stable}.ranking-scroll:focus-visible{outline:2px solid #fff;outline-offset:3px}.ranking-scroll table{table-layout:fixed}.ranking-scroll thead{height:36px;position:sticky;top:0;z-index:1;background:#202020}.ranking-scroll th{height:36px;padding:8px 4px;line-height:19px}.ranking-scroll tbody tr,.ranking-scroll td{height:56px}.ranking-scroll td{padding:12px 4px;line-height:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ranking-scroll th:first-child,.ranking-scroll td:first-child{width:34px}.ranking-scroll th:last-child{width:47%}
+.music-button,.board-button{white-space:nowrap;flex-shrink:0}
+.throttle-button strong{white-space:nowrap;letter-spacing:0}
+@media(max-width:720px){.music-button span{display:none}}
+@media(max-width:600px){.throttle-button strong{font-size:15px}}
