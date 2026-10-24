@@ -1,0 +1,26 @@
+@font-face{font-family:Race;src:url(assets/barlow-condensed-extrabold.ttf) format('truetype');font-display:swap}
+:root{color-scheme:dark;--ink:#f4f4f4;--muted:#bdbdbd;--line:#ffffff22;--red:#ef3b32;--race:Race,'Arial Narrow',sans-serif;--body:'Microsoft YaHei','PingFang SC',system-ui,sans-serif}
+*{box-sizing:border-box}
+html{background:#121212}
+body{margin:0;min-width:320px;background:#121212;color:var(--ink);font-family:var(--body);line-height:1.7}
+a{color:#fff;text-underline-offset:3px}
+a:hover{color:#ff9b8a}
+.credits-page{width:min(820px,calc(100% - 36px));margin:0 auto;padding:54px 0 70px}
+.credits-header{padding-bottom:28px;border-bottom:1px solid var(--line)}
+.eyebrow{margin:0 0 13px;color:#ff8d7b;font:800 12px/1.3 var(--race);letter-spacing:.16em}
+h1{margin:0;font:800 clamp(36px,7vw,58px)/1 var(--race);letter-spacing:.01em}
+.lede{max-width:680px;margin:18px 0 0;color:#d1d1d1;font-size:14px}
+.credits-section{padding:29px 0 0}
+h2{margin:0 0 14px;font-size:20px;font-weight:700}
+.credit-item{padding:16px 0;border-top:1px solid var(--line)}
+.credit-item h3{margin:0 0 7px;font-size:16px}
+.credit-item p{margin:5px 0;color:#c9c9c9;font-size:13px}
+.credit-item .note{color:#a9a9a9;font-size:12px}
+.credit-list{margin:0;padding:0;list-style:none}
+.credit-list li{padding:11px 0;border-top:1px solid var(--line);color:#c9c9c9;font-size:13px}
+.credit-list strong,.credit-item strong{color:#fff}
+.credits-footer{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);color:#aaa;font-size:12px}
+.credits-footer p{margin:0 0 7px}
+.credits-footer nav{display:flex;flex-wrap:wrap;gap:8px 18px}
+.back-link{display:inline-block;margin-top:24px;color:#fff;font-weight:700}
+@media(max-width:600px){.credits-page{width:min(100% - 28px,820px);padding:34px 0 48px}.lede{font-size:13px}.credit-item p,.credit-list li{font-size:12px}.credits-footer nav{display:grid;gap:5px}}

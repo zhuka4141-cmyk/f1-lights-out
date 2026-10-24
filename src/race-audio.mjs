@@ -16,7 +16,7 @@ export function createRaceAudio(button) {
     button.setAttribute('aria-label', failed ? '重试音效 / Retry sound effects' : enabled ? '关闭音效 / Mute sound effects' : '开启音效 / Unmute sound effects');
     button.classList.toggle('muted', !enabled);
     button.querySelector('span').textContent = enabled ? '音效 开' : '音效 关';
-    button.title = failed ? '点击重试音效 / Retry sound effects' : 'F1 V8 · Ears68 / Freesound';
+    button.title = failed ? '点击重试音效 / Retry sound effects' : '赛车引擎音效 · Ears68 / Freesound';
     button.dataset.audioState = !enabled ? 'muted' : failed ? 'retry' : loading ? 'loading' : buffers.size === 6 ? 'ready' : 'idle';
   }
   function release(voice) {
