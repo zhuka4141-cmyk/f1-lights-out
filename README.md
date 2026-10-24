@@ -141,6 +141,7 @@ src/app.mjs            键盘/触屏交互与游戏状态
 api/                   Vercel 在线排行榜入口
 server/                服务器重放校验、签名及私有持久存储
 scripts/build.mjs      只发布游戏静态资源的构建脚本
+scripts/validate-assets.mjs  构建前校验来源记录、文件大小与 SHA-256
 assets/models/         原下载 GLB、Poly Haven glTF 与 PBR 贴图
 assets/textures/       Poly Haven 实拍 PBR 与 HDR
 vendor/                本地 Three.js 渲染库及加载器

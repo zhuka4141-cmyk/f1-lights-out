@@ -1,0 +1,4 @@
+# Keep the downloaded text assets byte-identical to their SHA-256 records.
+vendor/*.js text eol=lf
+assets/**/*.gltf text eol=lf
+assets/**/*.json text eol=lf
