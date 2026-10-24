@@ -58,7 +58,7 @@ body[data-phase=sequence] .scene-shade,body[data-phase=waiting] .scene-shade,bod
 .rules-start-button:hover{background:#fff}
 .rules-start-button:focus-visible{outline:2px solid #fff;outline-offset:5px}
 .asset-credits-link{margin:9px 0 0;text-align:center;font-size:10px;line-height:1.4;color:#c5c5c5}.asset-credits-link a{text-underline-offset:3px}.asset-credits-link a:hover{color:#fff}
-.brand-logo{display:block;width:64px;height:64px;object-fit:contain;flex-shrink:0;margin-right:auto;border-radius:5px;background:#fff;position:relative;z-index:22}
+.brand-logo{display:block;width:64px;height:64px;object-fit:contain;flex-shrink:0;margin-right:auto;position:relative;z-index:22}
 @media(max-width:600px){.brand-logo{width:46px;height:46px}}
 @media(max-width:380px){.brand-logo{width:40px;height:40px}.music-button span{display:none}}
 .music-button{height:44px;position:relative;z-index:22;display:flex;align-items:center;gap:8px;padding:0 13px;background:#191919e8;color:#ededed;border:1px solid #ffffff66;border-radius:5px;font-size:11px}.music-button:hover{background:#353535}.music-button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.music-button .sound-muted,.music-button.muted .sound-waves{display:none}.music-button.muted .sound-muted{display:block}.music-button.muted{color:#bfbfbf}
