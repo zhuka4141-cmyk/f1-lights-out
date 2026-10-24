@@ -43,6 +43,8 @@ body[data-phase=sequence] .scene-shade,body[data-phase=waiting] .scene-shade,bod
 
 #liveReaction{background:transparent;border:0;box-shadow:none;backdrop-filter:none;padding:0;text-shadow:0 2px 4px #000000,0 0 12px #000000cc}
 .speed strong.overspeed-warning{color:#ff6258}
+.speed-limit-notice{position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);width:max-content;margin:0;padding:7px 12px;border-radius:5px;background:#161616ed;color:#ffe0a3;font-size:14px;line-height:1.4;white-space:nowrap;pointer-events:none}.speed-limit-notice strong{font-weight:700}
+@media(max-width:600px){.speed-limit-notice{bottom:calc(100% + 10px);padding:6px 8px;font-size:11px}}
 
 #howToPlayDialog{inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));border:0;border-radius:0;background:#151515;color:#fff;box-shadow:none;overflow:auto}
 #howToPlayDialog[open]{display:grid;place-items:center}
