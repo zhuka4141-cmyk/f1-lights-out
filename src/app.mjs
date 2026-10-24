@@ -25,7 +25,7 @@ const clearHeld = () => {
   attribute('throttleButton', 'aria-pressed', false); attribute('brakeButton', 'aria-pressed', false);
 };
 const pedalKeys = new Map([['KeyW', 'throttle'], ['KeyS', 'brake'], ['Space', 'throttle'], ['ArrowRight', 'throttle'], ['ArrowLeft', 'brake']]);
-let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null, submittingScore = false, startFlashShown = false;
+let world, driveClock = 0, resultShown = false, selectedId = null, collisionAt = null, submittingScore = false, startFlashShown = false, finishFlashShown = false;
 const namePreference = 'dragondance-driver-name-v1';
 function rememberedName() {
   try { return normalizePlayerName(localStorage.getItem(namePreference)); } catch { return ''; }
@@ -93,6 +93,7 @@ async function begin() {
   $('howToPlayDialog').close();
   clearHeld(); resetRecord(); drive.reset(); world.reset(); sequence.start(performance.now());
   startFlashShown = false; $('launchFlash').classList.remove('flash');
+  finishFlashShown = false; $('finishFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('introPanel').hidden = true; $('resultPanel').hidden = true; $('resultScrim').hidden = true;
   $('liveReaction').hidden = $('brakeGauge').hidden = true;
@@ -157,6 +158,7 @@ function home(event) {
   $('howToPlayDialog').close();
   clearHeld(); resetRecord(); sequence.reset(); drive.reset(); world.reset(); world.setLights(0);
   startFlashShown = false; $('launchFlash').classList.remove('flash');
+  finishFlashShown = false; $('finishFlash').classList.remove('flash');
   resultShown = false; collisionAt = null; $('leaderboardButton').disabled = false;
   $('resultPanel').hidden = $('resultScrim').hidden = $('liveReaction').hidden = $('brakeGauge').hidden = true;
   $('introPanel').hidden = false; $('throttleButton').disabled = true;
@@ -260,6 +262,9 @@ const rpm = [...$('rpmStrip').children];
 function frame(now) {
   if (world) {
     updateStart(now); advance(now); world.setLights(sequence.lights);
+    if (drive.finishCrossed && !finishFlashShown) {
+      finishFlashShown = true; $('finishFlash').classList.add('flash');
+    }
     const aftermath = world.render(now, drive);
     raceAudio.update(drive, sequence, now);
     if (!resultShown && ['collision', 'engine-blown'].includes(drive.result?.type)) {

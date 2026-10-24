@@ -308,7 +308,39 @@ export async function createScene(container) {
   const roadblockZ = finishZ - RULES.roadblockGap;
 
   const lights = [];
+  // Project the supplied artwork onto the downloaded meshes; no extra model.
+  const brandTexture = await textureLoader.loadAsync(assetURL('branding/dragon-logo-transparent.webp'));
+  brandTexture.colorSpace = THREE.SRGBColorSpace;
+  brandTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const brandGantry = (object, centers, size) => {
+    object.traverse(mesh => {
+      if (!mesh.isMesh) return;
+      const material = mesh.material.clone();
+      material.onBeforeCompile = shader => {
+        shader.uniforms.gantryBrand = { value: brandTexture };
+        shader.uniforms.gantryBrandCenters = { value: centers.map(([x, y]) => new THREE.Vector2(x, y)) };
+        shader.uniforms.gantryBrandSize = { value: size };
+        shader.vertexShader = 'varying vec2 vGantryBrandPosition;\n' + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+          '#include <begin_vertex>\nvGantryBrandPosition = (modelMatrix * vec4(transformed, 1.0)).xy;');
+        shader.fragmentShader = 'uniform sampler2D gantryBrand;\nuniform vec2 gantryBrandCenters[2];\nuniform float gantryBrandSize;\nvarying vec2 vGantryBrandPosition;\n' + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `
+          #include <map_fragment>
+          for (int brandIndex = 0; brandIndex < 2; brandIndex++) {
+            vec2 brandUV = (vGantryBrandPosition - gantryBrandCenters[brandIndex]) / gantryBrandSize + 0.5;
+            if (all(greaterThanEqual(brandUV, vec2(0.0))) && all(lessThanEqual(brandUV, vec2(1.0)))) {
+              vec4 ink = texture2D(gantryBrand, brandUV);
+              diffuseColor.rgb = mix(diffuseColor.rgb, ink.rgb, ink.a);
+            }
+          }
+        `);
+      };
+      material.customProgramCacheKey = () => 'gantry-brand-v1';
+      mesh.material = material;
+    });
+  };
   const gantry = place('overhead', 0, .2, -13 + 13.47327555 - 2, [18, 15, 18], 0, scene);
+  brandGantry(gantry, [[-7.1, 9.25], [7.1, 9.25]], 1.7);
   const signalRig = new THREE.Group(); scene.add(signalRig);
   // Preserve the original double lamp meshes from the project's downloaded kit.
   const lampTemplate = new THREE.Group(); assets.overheadLights.updateMatrixWorld(true);
@@ -455,6 +487,7 @@ export async function createScene(container) {
     mesh.material = new THREE.MeshStandardMaterial({ color: '#eeeeea', roughness: .65, metalness: .25 });
     mesh.castShadow = true; mesh.receiveShadow = true;
   });
+  brandGantry(finishGantry, [[-10.17, 3.2], [10.17, 3.2]], 1.85);
   const bannerCanvas = document.createElement('canvas'); bannerCanvas.width = 2048; bannerCanvas.height = 256;
   const banner = bannerCanvas.getContext('2d'); banner.fillStyle = '#111111'; banner.fillRect(0, 0, 2048, 256);
   for (const edge of [0, 1856]) for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) {
